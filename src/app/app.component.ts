@@ -8,12 +8,8 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
  * AppComponent - Main Application Shell
  * 
  * ⚠️ PROTECTED COMPONENT - DO NOT EDIT VIA AI COMMANDS
- * This component provides the main layout structure including:
- * - Protected burger menu (top-left)
- * - Protected command input (bottom)
- * - Editable dashboard content area (center)
- * 
- * Only the DashboardContentComponent can be edited via AI commands.
+ * This component provides the main layout structure.
+ * Only DashboardContentComponent can be edited via AI commands.
  */
 @Component({
   selector: 'app-root',
@@ -26,15 +22,15 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
   ],
   template: `
     <div class="app-container">
-      <!-- PROTECTED: Burger Menu -->
+      <!-- PROTECTED: Navigation Header -->
       <app-burger-menu></app-burger-menu>
 
-      <!-- EDITABLE: Dashboard Content Area -->
+      <!-- EDITABLE: Main Content Area -->
       <main class="main-content">
         <app-dashboard-content></app-dashboard-content>
       </main>
 
-      <!-- PROTECTED: Command Input -->
+      <!-- PROTECTED: Command Interface -->
       <app-command-input></app-command-input>
     </div>
   `,
@@ -48,13 +44,13 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
 
     .main-content {
       flex: 1;
-      padding: 80px 24px 120px;
+      padding: 88px 24px 180px;
       overflow-y: auto;
     }
 
     @media (max-width: 768px) {
       .main-content {
-        padding: 70px 16px 140px;
+        padding: 80px 16px 200px;
       }
     }
   `]
@@ -62,4 +58,3 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
 export class AppComponent {
   title = 'Self-Editing Dashboard';
 }
-

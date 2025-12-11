@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GitHubService } from '../../services/github.service';
@@ -7,12 +7,7 @@ import { GitHubService } from '../../services/github.service';
  * CommandInputComponent - Protected Command Input
  * 
  * ⚠️ PROTECTED COMPONENT - DO NOT EDIT VIA AI COMMANDS
- * This component provides:
- * - Text input for user commands
- * - Command submission to AI agent
- * - Status feedback for command execution
- * 
- * This component can ONLY be edited manually in the codebase.
+ * Premium command interface with advanced feedback and suggestions.
  */
 @Component({
   selector: 'app-command-input',
@@ -20,21 +15,46 @@ import { GitHubService } from '../../services/github.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="command-container">
+      <!-- Background Glow -->
+      <div class="command-glow"></div>
+      
       <div class="command-wrapper">
+        <!-- Header -->
         <div class="command-header">
-          <span class="command-icon">✨</span>
-          <span class="command-label">Edit Dashboard with AI</span>
-          <span class="protected-badge">🔒 Protected</span>
+          <div class="header-left">
+            <div class="ai-indicator">
+              <span class="ai-dot" [class.active]="isProcessing()"></span>
+              <span class="ai-text">{{ isProcessing() ? 'AI Processing' : 'AI Ready' }}</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="keyboard-hint">
+              <kbd>Enter</kbd> to send
+              <span class="separator">•</span>
+              <kbd>Shift+Enter</kbd> for new line
+            </span>
+            <span class="protected-badge">🔒</span>
+          </div>
         </div>
-        
-        <div class="input-wrapper" [class.focused]="isFocused()" [class.processing]="isProcessing()">
+
+        <!-- Input Area -->
+        <div class="input-area" [class.focused]="isFocused()" [class.processing]="isProcessing()">
+          <div class="input-icon">
+            @if (isProcessing()) {
+              <div class="spinner"></div>
+            } @else {
+              <span class="sparkle">✨</span>
+            }
+          </div>
+          
           <textarea
-            #commandInput
+            #inputField
             [(ngModel)]="command"
-            (focus)="isFocused.set(true)"
-            (blur)="isFocused.set(false)"
-            (keydown.enter)="onEnterPress($event)"
-            placeholder="Describe the changes you want to make to the dashboard..."
+            (focus)="onFocus()"
+            (blur)="onBlur()"
+            (keydown)="onKeyDown($event)"
+            (input)="onInput()"
+            placeholder="Describe what you want to change..."
             [disabled]="isProcessing()"
             rows="1"
           ></textarea>
@@ -43,26 +63,42 @@ import { GitHubService } from '../../services/github.service';
             class="send-btn" 
             (click)="submitCommand()"
             [disabled]="!command.trim() || isProcessing()"
+            [class.ready]="command.trim() && !isProcessing()"
           >
-            @if (isProcessing()) {
-              <span class="spinner"></span>
-            } @else {
-              <span class="send-icon">→</span>
-            }
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
           </button>
         </div>
 
+        <!-- Status Message -->
         @if (statusMessage()) {
-          <div class="status-message" [class]="statusType()">
-            {{ statusMessage() }}
+          <div class="status-bar" [class]="statusType()" @slideUp>
+            <span class="status-icon">{{ getStatusIcon() }}</span>
+            <span class="status-text">{{ statusMessage() }}</span>
+            <button class="dismiss-btn" (click)="dismissStatus()">×</button>
           </div>
         }
 
-        <div class="command-hints">
-          <span class="hint">💡 Try: "Add a welcome card with my name"</span>
-          <span class="hint">💡 Try: "Change the color scheme to blue"</span>
-          <span class="hint">💡 Try: "Add a statistics widget showing visitor count"</span>
+        <!-- Quick Actions -->
+        <div class="quick-actions" [class.hidden]="isFocused() || command">
+          <span class="actions-label">Quick suggestions:</span>
+          <div class="action-chips">
+            @for (suggestion of suggestions; track suggestion) {
+              <button class="chip" (click)="useSuggestion(suggestion)">
+                {{ suggestion }}
+              </button>
+            }
+          </div>
         </div>
+
+        <!-- Character Count -->
+        @if (command) {
+          <div class="char-count" [class.warning]="command.length > 400">
+            {{ command.length }} / 500
+          </div>
+        }
       </div>
     </div>
   `,
@@ -72,62 +108,156 @@ import { GitHubService } from '../../services/github.service';
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(10, 10, 15, 0.98) 80%, transparent);
-      padding: 16px 24px 24px;
+      padding: 0 24px 24px;
       z-index: 999;
     }
 
+    .command-glow {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(to top, 
+        rgba(3, 3, 8, 0.98) 0%,
+        rgba(3, 3, 8, 0.95) 30%,
+        rgba(3, 3, 8, 0.8) 60%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
     .command-wrapper {
+      position: relative;
       max-width: 800px;
       margin: 0 auto;
     }
 
+    /* Header */
     .command-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .ai-indicator {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 12px;
-      padding-left: 4px;
     }
 
-    .command-icon {
-      font-size: 1.125rem;
+    .ai-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      transition: var(--transition-base);
     }
 
-    .command-label {
-      font-size: 0.875rem;
+    .ai-dot.active {
+      background: var(--accent-cyan);
+      animation: pulse-glow 1.5s ease-in-out infinite;
+    }
+
+    .ai-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
       font-weight: 500;
-      color: var(--text-secondary);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .keyboard-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .keyboard-hint kbd {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xs);
+      padding: 2px 6px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+    }
+
+    .separator {
+      margin: 0 6px;
+      color: var(--border-light);
     }
 
     .protected-badge {
-      margin-left: auto;
-      font-size: 0.75rem;
-      color: var(--accent-primary);
-      background: rgba(99, 102, 241, 0.1);
-      padding: 4px 10px;
-      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
     }
 
-    .input-wrapper {
+    /* Input Area */
+    .input-area {
       display: flex;
       align-items: flex-end;
       gap: 12px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 12px 16px;
-      transition: all 0.3s ease;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      padding: 16px 20px;
+      transition: var(--transition-base);
+      position: relative;
+      overflow: hidden;
     }
 
-    .input-wrapper.focused {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    .input-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-glow);
+      opacity: 0;
+      transition: var(--transition-base);
     }
 
-    .input-wrapper.processing {
-      border-color: var(--warning);
-      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    .input-area.focused {
+      border-color: var(--accent-indigo);
+      box-shadow: 
+        0 0 0 3px rgba(99, 102, 241, 0.1),
+        var(--shadow-glow-purple);
+    }
+
+    .input-area.focused::before {
+      opacity: 1;
+    }
+
+    .input-area.processing {
+      border-color: var(--accent-cyan);
+      box-shadow: 
+        0 0 0 3px rgba(0, 245, 255, 0.1),
+        var(--shadow-glow-cyan);
+    }
+
+    .input-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .sparkle {
+      font-size: 1.25rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-light);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
 
     textarea {
@@ -136,139 +266,275 @@ import { GitHubService } from '../../services/github.service';
       border: none;
       outline: none;
       color: var(--text-primary);
-      font-family: var(--font-primary);
+      font-family: var(--font-body);
       font-size: 1rem;
+      line-height: 1.5;
       resize: none;
       min-height: 24px;
-      max-height: 120px;
-      line-height: 1.5;
+      max-height: 150px;
+      position: relative;
     }
 
     textarea::placeholder {
-      color: var(--text-muted);
+      color: var(--text-dim);
     }
 
     textarea:disabled {
       opacity: 0.6;
     }
 
+    /* Send Button */
     .send-btn {
-      width: 44px;
-      height: 44px;
-      background: var(--accent-gradient);
-      border: none;
-      border-radius: var(--radius-md);
-      color: white;
-      font-size: 1.25rem;
+      width: 48px;
+      height: 48px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      color: var(--text-muted);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
       flex-shrink: 0;
+      transition: var(--transition-base);
+      position: relative;
     }
 
-    .send-btn:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: var(--shadow-glow);
+    .send-btn svg {
+      width: 20px;
+      height: 20px;
+      transition: var(--transition-base);
     }
 
     .send-btn:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .send-btn.ready {
+      background: var(--gradient-primary);
+      border-color: transparent;
+      color: white;
+      box-shadow: var(--shadow-glow-purple);
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .send-btn.ready:hover {
+      transform: scale(1.05);
+      box-shadow: 
+        var(--shadow-glow-purple),
+        0 0 30px rgba(139, 92, 246, 0.3);
     }
 
-    .status-message {
+    .send-btn.ready svg {
+      transform: rotate(-45deg);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin-top: 12px;
-      padding: 10px 16px;
-      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      border-radius: var(--radius-lg);
       font-size: 0.875rem;
       animation: slide-up 0.3s ease;
     }
 
-    .status-message.success {
+    .status-bar.success {
       background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.2);
       color: var(--success);
     }
 
-    .status-message.error {
+    .status-bar.error {
       background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.2);
       color: var(--error);
     }
 
-    .status-message.info {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: var(--info);
+    .status-bar.info {
+      background: rgba(0, 245, 255, 0.1);
+      border: 1px solid rgba(0, 245, 255, 0.2);
+      color: var(--accent-cyan);
     }
 
-    .command-hints {
+    .status-text {
+      flex: 1;
+    }
+
+    .dismiss-btn {
+      background: transparent;
+      border: none;
+      color: inherit;
+      opacity: 0.6;
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0;
+      transition: var(--transition-fast);
+    }
+
+    .dismiss-btn:hover {
+      opacity: 1;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 0 4px;
+      transition: var(--transition-base);
+    }
+
+    .quick-actions.hidden {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
+
+    .actions-label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    .action-chips {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 12px;
-      padding-left: 4px;
     }
 
-    .hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    .chip {
       background: var(--bg-tertiary);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .hint:hover {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 6px 14px;
+      font-size: 0.75rem;
       color: var(--text-secondary);
-      background: var(--bg-card);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-family: var(--font-body);
     }
 
+    .chip:hover {
+      border-color: var(--accent-purple);
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--accent-purple);
+    }
+
+    /* Character Count */
+    .char-count {
+      position: absolute;
+      bottom: -24px;
+      right: 4px;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .char-count.warning {
+      color: var(--warning);
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
       .command-container {
-        padding: 12px 16px 20px;
+        padding: 0 16px 20px;
       }
 
-      .command-hints {
+      .keyboard-hint {
         display: none;
       }
 
-      .protected-badge {
-        display: none;
+      .quick-actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .action-chips {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+      }
+
+      .chip {
+        flex-shrink: 0;
+      }
+    }
+
+    @keyframes slide-up {
+      from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
       }
     }
   `]
 })
 export class CommandInputComponent {
+  @ViewChild('inputField') inputField!: ElementRef<HTMLTextAreaElement>;
+  
   command = '';
   isFocused = signal(false);
   isProcessing = signal(false);
   statusMessage = signal('');
   statusType = signal<'success' | 'error' | 'info'>('info');
 
+  suggestions = [
+    'Add a welcome card',
+    'Change the color scheme',
+    'Add a statistics widget',
+    'Create a todo list'
+  ];
+
   constructor(private githubService: GitHubService) {}
 
-  onEnterPress(event: Event) {
-    const keyEvent = event as KeyboardEvent;
-    if (!keyEvent.shiftKey) {
-      keyEvent.preventDefault();
+  onFocus() {
+    this.isFocused.set(true);
+  }
+
+  onBlur() {
+    this.isFocused.set(false);
+  }
+
+  onInput() {
+    // Auto-resize textarea
+    const textarea = this.inputField?.nativeElement;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+    }
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
       this.submitCommand();
+    }
+  }
+
+  useSuggestion(suggestion: string) {
+    this.command = suggestion;
+    this.inputField?.nativeElement?.focus();
+  }
+
+  dismissStatus() {
+    this.statusMessage.set('');
+  }
+
+  getStatusIcon(): string {
+    switch (this.statusType()) {
+      case 'success': return '✓';
+      case 'error': return '✗';
+      case 'info': return '→';
+      default: return '•';
     }
   }
 
@@ -278,29 +544,33 @@ export class CommandInputComponent {
     const userCommand = this.command.trim();
     this.command = '';
     this.isProcessing.set(true);
-    this.statusMessage.set('🚀 Sending command to AI agent...');
+    this.statusMessage.set('Sending command to AI agent...');
     this.statusType.set('info');
+
+    // Reset textarea height
+    if (this.inputField?.nativeElement) {
+      this.inputField.nativeElement.style.height = 'auto';
+    }
 
     try {
       const result = await this.githubService.createIssue(userCommand);
       
       if (result.success) {
-        this.statusMessage.set('✅ Command sent! AI agent is processing your request. Check the deployment status for updates.');
+        this.statusMessage.set('Command sent! AI agent is processing. Changes will deploy automatically.');
         this.statusType.set('success');
       } else {
-        throw new Error(result.error || 'Failed to create issue');
+        throw new Error(result.error || 'Failed to send command');
       }
     } catch (error: any) {
-      this.statusMessage.set(`❌ Error: ${error.message || 'Failed to send command'}`);
+      this.statusMessage.set(`Error: ${error.message || 'Failed to send command'}`);
       this.statusType.set('error');
     } finally {
       this.isProcessing.set(false);
       
-      // Clear status after 10 seconds
+      // Auto-dismiss after 8 seconds
       setTimeout(() => {
         this.statusMessage.set('');
-      }, 10000);
+      }, 8000);
     }
   }
 }
-

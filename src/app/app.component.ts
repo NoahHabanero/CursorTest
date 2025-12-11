@@ -2,14 +2,17 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BurgerMenuComponent } from './components/burger-menu/burger-menu.component';
 import { CommandInputComponent } from './components/command-input/command-input.component';
-import { DashboardContentComponent } from './components/dashboard-content/dashboard-content.component';
+import { SandboxCanvasComponent } from './components/sandbox-canvas/sandbox-canvas.component';
 import { ToastContainerComponent } from './components/toast-container/toast-container.component';
 import { AnimatedBackgroundComponent } from './components/animated-background/animated-background.component';
 import { SplashScreenComponent } from './components/splash-screen/splash-screen.component';
 import { KeyboardShortcutsComponent } from './components/keyboard-shortcuts/keyboard-shortcuts.component';
 import { DraggableContainerComponent } from './components/draggable-container/draggable-container.component';
 import { DeploymentTrackerComponent } from './components/deployment-tracker/deployment-tracker.component';
+import { ApiKeyModalComponent } from './components/api-key-modal/api-key-modal.component';
+import { ClearCanvasButtonComponent } from './components/clear-canvas-button/clear-canvas-button.component';
 import { ToastService } from './services/toast.service';
+import { AIEditorService } from './services/ai-editor.service';
 
 /**
  * AppComponent - Main Application Shell
@@ -25,13 +28,15 @@ import { ToastService } from './services/toast.service';
     CommonModule,
     BurgerMenuComponent,
     CommandInputComponent,
-    DashboardContentComponent,
+    SandboxCanvasComponent,
     ToastContainerComponent,
     AnimatedBackgroundComponent,
     SplashScreenComponent,
     KeyboardShortcutsComponent,
     DraggableContainerComponent,
-    DeploymentTrackerComponent
+    DeploymentTrackerComponent,
+    ApiKeyModalComponent,
+    ClearCanvasButtonComponent
   ],
   template: `
     <!-- Splash Screen -->
@@ -45,14 +50,19 @@ import { ToastService } from './services/toast.service';
       <div class="pond-content">
         <div class="editable-zone">
           <div class="zone-label">
-            <span class="zone-icon">✏️</span>
-            <span>Editable Zone - AI Can Modify This</span>
+            <span class="zone-icon">🎨</span>
+            <span>AI Canvas - Type a command to transform this</span>
           </div>
           <main class="main-content">
-            <app-dashboard-content></app-dashboard-content>
+            <app-sandbox-canvas></app-sandbox-canvas>
           </main>
         </div>
       </div>
+
+      <!-- API Key Modal -->
+      @if (showApiKeyModal()) {
+        <app-api-key-modal (close)="showApiKeyModal.set(false)"></app-api-key-modal>
+      }
 
       <!-- Floating Lillies Layer (Protected Elements) -->
       
@@ -83,7 +93,22 @@ import { ToastService } from './services/toast.service';
         [minimizedInitialX]="20"
         [minimizedInitialY]="100"
       >
-        <app-command-input></app-command-input>
+        <app-command-input (openApiKeyModal)="showApiKeyModal.set(true)"></app-command-input>
+      </app-draggable-container>
+
+      <!-- Clear Canvas Button - Floating Lilly -->
+      <app-draggable-container
+        id="clear"
+        name="Canvas Controls"
+        icon="🧹"
+        width="auto"
+        height="auto"
+        [initialX]="20"
+        [initialY]="getClearButtonInitialY()"
+        [minimizedInitialX]="20"
+        [minimizedInitialY]="260"
+      >
+        <app-clear-canvas-button></app-clear-canvas-button>
       </app-draggable-container>
 
       <!-- Deployment Tracker - Floating Lilly -->
@@ -280,10 +305,18 @@ import { ToastService } from './services/toast.service';
 export class AppComponent implements OnInit {
   title = 'Self-Editing Dashboard';
   isLoaded = signal(false);
+  showApiKeyModal = signal(false);
+  
   private toastService = inject(ToastService);
+  private aiEditor = inject(AIEditorService);
 
   ngOnInit() {
-    // App initialization
+    // Check if API key is configured
+    if (!this.aiEditor.hasApiKey()) {
+      setTimeout(() => {
+        this.toastService.info('👋 Set your API key to start creating with AI!');
+      }, 1500);
+    }
   }
 
   onLoadingComplete() {
@@ -291,7 +324,7 @@ export class AppComponent implements OnInit {
     
     // Show welcome toast after splash screen
     setTimeout(() => {
-      this.toastService.info('🪷 Drag the floating elements around! Minimize them by clicking the − button.');
+      this.toastService.info('🎨 Type a command to transform the canvas! Drag floating elements around.');
     }, 800);
   }
 
@@ -309,6 +342,11 @@ export class AppComponent implements OnInit {
   getTrackerInitialX(): number {
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
     return viewportWidth - 340; // 320px width + 20px margin
+  }
+
+  getClearButtonInitialY(): number {
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+    return viewportHeight - 100;
   }
 
   showHelp() {

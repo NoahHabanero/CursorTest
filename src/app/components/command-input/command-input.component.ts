@@ -1,9 +1,9 @@
-import { Component, signal, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GitHubService } from '../../services/github.service';
 import { ToastService } from '../../services/toast.service';
 import { DeploymentTrackerService } from '../../services/deployment-tracker.service';
+import { AIEditorService } from '../../services/ai-editor.service';
 
 /**
  * CommandInputComponent - Protected Command Input
@@ -22,11 +22,17 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
       <div class="command-header">
         <div class="header-left">
           <div class="ai-indicator">
-            <span class="ai-dot" [class.active]="isProcessing()"></span>
-            <span class="ai-text">{{ isProcessing() ? 'Processing' : 'AI Ready' }}</span>
+            <span class="ai-dot" [class.active]="aiEditor.isProcessing()" [class.no-key]="!aiEditor.hasApiKey()"></span>
+            <span class="ai-text">{{ getStatusText() }}</span>
           </div>
         </div>
         <div class="header-right">
+          <button class="api-key-btn" (click)="openApiKeyModal.emit()" [class.configured]="aiEditor.hasApiKey()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+            </svg>
+            <span>{{ aiEditor.hasApiKey() ? 'API Key ✓' : 'Set API Key' }}</span>
+          </button>
           <span class="keyboard-hint">
             <kbd>Enter</kbd> to send
           </span>
@@ -133,6 +139,10 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
       animation: pulse-glow 1.5s ease-in-out infinite;
     }
 
+    .ai-dot.no-key {
+      background: var(--warning);
+    }
+
     @keyframes pulse-glow {
       0%, 100% { box-shadow: 0 0 4px var(--accent-cyan); }
       50% { box-shadow: 0 0 12px var(--accent-cyan); }
@@ -142,6 +152,41 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
       font-size: 0.7rem;
       color: var(--text-muted);
       font-weight: 500;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .api-key-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: color-mix(in srgb, var(--warning) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+      border-radius: var(--radius-md);
+      color: var(--warning);
+      font-size: 0.65rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .api-key-btn:hover {
+      background: color-mix(in srgb, var(--warning) 25%, transparent);
+    }
+
+    .api-key-btn.configured {
+      background: color-mix(in srgb, var(--success) 15%, transparent);
+      border-color: color-mix(in srgb, var(--success) 30%, transparent);
+      color: var(--success);
+    }
+
+    .api-key-btn.configured:hover {
+      background: color-mix(in srgb, var(--success) 25%, transparent);
     }
 
     .keyboard-hint {
@@ -392,22 +437,32 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
 export class CommandInputComponent {
   @ViewChild('inputField') inputField!: ElementRef<HTMLTextAreaElement>;
   
+  openApiKeyModal = output<void>();
+  
   command = '';
   isFocused = signal(false);
-  isProcessing = signal(false);
   statusMessage = signal('');
   statusType = signal<'success' | 'error' | 'info'>('info');
 
   private toastService = inject(ToastService);
   private deploymentTracker = inject(DeploymentTrackerService);
+  aiEditor = inject(AIEditorService);
 
   suggestions = [
-    'Add a card',
-    'Change colors',
-    'Add widget'
+    'Create a weather widget',
+    'Add a colorful gradient',
+    'Build a todo list'
   ];
 
-  constructor(private githubService: GitHubService) {}
+  getStatusText(): string {
+    if (this.aiEditor.isProcessing()) return 'Processing...';
+    if (!this.aiEditor.hasApiKey()) return 'No API Key';
+    return 'AI Ready';
+  }
+
+  isProcessing(): boolean {
+    return this.aiEditor.isProcessing();
+  }
 
   onFocus() {
     this.isFocused.set(true);
@@ -453,40 +508,38 @@ export class CommandInputComponent {
   async submitCommand() {
     if (!this.command.trim() || this.isProcessing()) return;
 
+    if (!this.aiEditor.hasApiKey()) {
+      this.toastService.show('Please set your API key first', 'error');
+      this.openApiKeyModal.emit();
+      return;
+    }
+
     const userCommand = this.command.trim();
     this.command = '';
-    this.isProcessing.set(true);
-    this.statusMessage.set('Sending command to AI agent...');
+    this.statusMessage.set('AI is transforming the canvas...');
     this.statusType.set('info');
 
     if (this.inputField?.nativeElement) {
       this.inputField.nativeElement.style.height = 'auto';
     }
 
-    // Track the command in deployment tracker
-    this.deploymentTracker.trackCommand(userCommand);
-
     try {
-      const result = await this.githubService.createIssue(userCommand);
+      const success = await this.aiEditor.processCommand(userCommand);
       
-      if (result.success) {
-        this.statusMessage.set('Command sent! AI agent is processing. Changes will deploy automatically.');
+      if (success) {
+        this.statusMessage.set('Canvas updated successfully!');
         this.statusType.set('success');
-        this.toastService.success('Command sent! AI agent is processing your request.');
       } else {
-        throw new Error(result.error || 'Failed to send command');
+        this.statusMessage.set('Failed to process command. Check your API key.');
+        this.statusType.set('error');
       }
     } catch (error: any) {
-      this.statusMessage.set(`Error: ${error.message || 'Failed to send command'}`);
+      this.statusMessage.set(`Error: ${error.message || 'Failed to process command'}`);
       this.statusType.set('error');
-      this.toastService.error(`Failed to send command: ${error.message || 'Unknown error'}`);
-      this.deploymentTracker.addEvent('error', `Failed: ${error.message || 'Unknown error'}`);
     } finally {
-      this.isProcessing.set(false);
-      
       setTimeout(() => {
         this.statusMessage.set('');
-      }, 8000);
+      }, 5000);
     }
   }
 }

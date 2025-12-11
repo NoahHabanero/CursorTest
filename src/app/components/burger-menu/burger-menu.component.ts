@@ -6,13 +6,14 @@ import { CommonModule } from '@angular/common';
  * 
  * ⚠️ PROTECTED COMPONENT - DO NOT EDIT VIA AI COMMANDS
  * Premium navigation with deployment tracking and system status.
+ * Now designed to work inside a draggable container.
  */
 @Component({
   selector: 'app-burger-menu',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <header class="header glass-strong">
+    <header class="header">
       <div class="header-left">
         <button class="burger-btn" (click)="toggleMenu()" [class.active]="isOpen()">
           <div class="burger-icon">
@@ -177,64 +178,34 @@ import { CommonModule } from '@angular/common';
     </nav>
   `,
   styles: [`
-    /* Header - PROTECTED FLOATING ELEMENT */
+    /* Header - Now inside draggable container */
     .header {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      height: 64px;
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      z-index: 1000;
-      border-radius: var(--radius-xl);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      background: rgba(10, 10, 18, 0.85);
+      padding: 0 16px;
+      background: rgba(10, 10, 18, 0.95);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-xl);
       box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
         0 0 60px rgba(99, 102, 241, 0.1);
-      animation: float-in 0.5s ease forwards;
-    }
-
-    .header::before {
-      content: '🔒';
-      position: absolute;
-      top: -8px;
-      right: 16px;
-      font-size: 0.65rem;
-      background: var(--bg-tertiary);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 2px 6px;
-      border-radius: var(--radius-sm);
-      color: var(--accent-purple);
-    }
-
-    @keyframes float-in {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     .header-left, .header-right {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     /* Burger Button */
     .burger-btn {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       background: transparent;
       border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
@@ -258,13 +229,13 @@ import { CommonModule } from '@angular/common';
     .burger-icon {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       transition: var(--transition-base);
     }
 
     .burger-icon span {
       display: block;
-      width: 18px;
+      width: 16px;
       height: 2px;
       background: var(--text-primary);
       border-radius: 1px;
@@ -272,7 +243,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .burger-btn.active .burger-icon span:nth-child(1) {
-      transform: translateY(7px) rotate(45deg);
+      transform: translateY(6px) rotate(45deg);
     }
 
     .burger-btn.active .burger-icon span:nth-child(2) {
@@ -281,27 +252,27 @@ import { CommonModule } from '@angular/common';
     }
 
     .burger-btn.active .burger-icon span:nth-child(3) {
-      transform: translateY(-7px) rotate(-45deg);
+      transform: translateY(-6px) rotate(-45deg);
     }
 
     /* Logo */
     .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .logo-icon {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .logo-icon svg {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       color: var(--accent-cyan);
     }
 
@@ -313,13 +284,13 @@ import { CommonModule } from '@angular/common';
 
     .logo-main {
       font-family: var(--font-display);
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: var(--text-primary);
     }
 
     .logo-sub {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       font-weight: 500;
     }
@@ -334,10 +305,10 @@ import { CommonModule } from '@angular/common';
     .live-indicator {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: var(--radius-full);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 500;
       transition: var(--transition-base);
     }
@@ -355,20 +326,20 @@ import { CommonModule } from '@angular/common';
     }
 
     .pulse-dot {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
     }
 
     .live .pulse-dot {
       background: var(--success);
-      box-shadow: 0 0 10px var(--success-glow);
+      box-shadow: 0 0 8px var(--success-glow);
     }
 
     .deploying .pulse-dot {
       background: var(--warning);
-      box-shadow: 0 0 10px var(--warning-glow);
+      box-shadow: 0 0 8px var(--warning-glow);
     }
 
     @keyframes pulse {
@@ -379,17 +350,17 @@ import { CommonModule } from '@angular/common';
     /* Time & GitHub */
     .time-display {
       font-family: var(--font-mono);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      padding: 8px 12px;
+      padding: 6px 10px;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
     }
 
     .github-btn {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -408,8 +379,8 @@ import { CommonModule } from '@angular/common';
     }
 
     .github-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
 
     /* Menu Overlay */
@@ -421,7 +392,7 @@ import { CommonModule } from '@angular/common';
       opacity: 0;
       visibility: hidden;
       transition: var(--transition-base);
-      z-index: 1001;
+      z-index: 2001;
     }
 
     .menu-overlay.open {
@@ -429,41 +400,26 @@ import { CommonModule } from '@angular/common';
       visibility: visible;
     }
 
-    /* Menu Panel - PROTECTED FLOATING */
+    /* Menu Panel */
     .menu-panel {
       position: fixed;
       top: 12px;
       left: 12px;
-      width: 340px;
+      width: 320px;
       height: calc(100vh - 24px);
       transform: translateX(calc(-100% - 24px));
       transition: transform var(--transition-slow);
-      z-index: 1002;
+      z-index: 2002;
       display: flex;
       flex-direction: column;
       border-radius: var(--radius-2xl);
       border: 1px solid rgba(99, 102, 241, 0.2);
-      background: rgba(10, 10, 18, 0.95);
+      background: rgba(10, 10, 18, 0.98);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       box-shadow: 
         0 8px 40px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
         0 0 80px rgba(99, 102, 241, 0.15);
-    }
-
-    .menu-panel::before {
-      content: '🔒 Protected Panel';
-      position: absolute;
-      top: -10px;
-      left: 20px;
-      font-size: 0.65rem;
-      background: var(--bg-tertiary);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 2px 8px;
-      border-radius: var(--radius-sm);
-      color: var(--accent-purple);
-      z-index: 1;
     }
 
     .menu-panel.open {
@@ -474,7 +430,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 24px;
+      padding: 20px;
       border-bottom: 1px solid var(--border-subtle);
     }
 
@@ -483,13 +439,13 @@ import { CommonModule } from '@angular/common';
       align-items: center;
       gap: 10px;
       font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
     }
 
     .close-btn {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -508,15 +464,15 @@ import { CommonModule } from '@angular/common';
     }
 
     .close-btn svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
 
     /* Menu Content */
     .menu-content {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 16px;
     }
 
     /* Status Card */
@@ -524,26 +480,26 @@ import { CommonModule } from '@angular/common';
       background: var(--gradient-card);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 24px;
+      padding: 16px;
+      margin-bottom: 20px;
     }
 
     .status-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .status-label {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
       font-weight: 500;
     }
 
     .status-badge {
-      font-size: 0.75rem;
-      padding: 4px 10px;
+      font-size: 0.7rem;
+      padding: 3px 8px;
       border-radius: var(--radius-full);
       font-weight: 600;
     }
@@ -561,7 +517,7 @@ import { CommonModule } from '@angular/common';
     .status-metrics {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
 
     .metric {
@@ -571,13 +527,13 @@ import { CommonModule } from '@angular/common';
     .metric-value {
       display: block;
       font-family: var(--font-mono);
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--text-primary);
     }
 
     .metric-label {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -585,18 +541,18 @@ import { CommonModule } from '@angular/common';
 
     /* Menu Sections */
     .menu-section {
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .section-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
+      gap: 6px;
+      font-size: 0.75rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       font-weight: 600;
     }
 
@@ -607,8 +563,8 @@ import { CommonModule } from '@angular/common';
     .menu-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      gap: 10px;
+      padding: 10px 12px;
       margin-bottom: 4px;
       border-radius: var(--radius-md);
       cursor: pointer;
@@ -620,12 +576,12 @@ import { CommonModule } from '@angular/common';
     }
 
     .item-icon {
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
 
     .item-text {
       flex: 1;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .item-arrow {
@@ -639,8 +595,8 @@ import { CommonModule } from '@angular/common';
     }
 
     .item-badge {
-      font-size: 0.7rem;
-      padding: 2px 8px;
+      font-size: 0.65rem;
+      padding: 2px 6px;
       background: rgba(139, 92, 246, 0.15);
       color: var(--accent-purple);
       border-radius: var(--radius-sm);
@@ -648,7 +604,7 @@ import { CommonModule } from '@angular/common';
 
     /* Menu Footer */
     .menu-footer {
-      padding: 16px 24px;
+      padding: 14px 20px;
       border-top: 1px solid var(--border-subtle);
       text-align: center;
     }
@@ -658,8 +614,8 @@ import { CommonModule } from '@angular/common';
       justify-content: center;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
-      font-size: 0.75rem;
+      margin-bottom: 6px;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
 
@@ -675,7 +631,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       justify-content: center;
       gap: 8px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
     }
 
     .footer-links a {
@@ -690,7 +646,7 @@ import { CommonModule } from '@angular/common';
     /* Responsive */
     @media (max-width: 768px) {
       .menu-panel {
-        width: 100%;
+        width: calc(100% - 24px);
       }
 
       .logo-text {

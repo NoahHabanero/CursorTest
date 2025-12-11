@@ -9,157 +9,102 @@ import { ToastService } from '../../services/toast.service';
  * 
  * ⚠️ PROTECTED COMPONENT - DO NOT EDIT VIA AI COMMANDS
  * Premium command interface with advanced feedback and suggestions.
+ * Now designed to work inside a draggable container.
  */
 @Component({
   selector: 'app-command-input',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="command-container">
-      <!-- Background Glow -->
-      <div class="command-glow"></div>
-      
-      <div class="command-wrapper">
-        <!-- Header -->
-        <div class="command-header">
-          <div class="header-left">
-            <div class="ai-indicator">
-              <span class="ai-dot" [class.active]="isProcessing()"></span>
-              <span class="ai-text">{{ isProcessing() ? 'AI Processing' : 'AI Ready' }}</span>
-            </div>
-          </div>
-          <div class="header-right">
-            <span class="keyboard-hint">
-              <kbd>Enter</kbd> to send
-              <span class="separator">•</span>
-              <kbd>Shift+Enter</kbd> for new line
-            </span>
-            <span class="protected-badge">🔒</span>
+    <div class="command-panel">
+      <!-- Header -->
+      <div class="command-header">
+        <div class="header-left">
+          <div class="ai-indicator">
+            <span class="ai-dot" [class.active]="isProcessing()"></span>
+            <span class="ai-text">{{ isProcessing() ? 'Processing' : 'AI Ready' }}</span>
           </div>
         </div>
-
-        <!-- Input Area -->
-        <div class="input-area" [class.focused]="isFocused()" [class.processing]="isProcessing()">
-          <div class="input-icon">
-            @if (isProcessing()) {
-              <div class="spinner"></div>
-            } @else {
-              <span class="sparkle">✨</span>
-            }
-          </div>
-          
-          <textarea
-            #inputField
-            [(ngModel)]="command"
-            (focus)="onFocus()"
-            (blur)="onBlur()"
-            (keydown)="onKeyDown($event)"
-            (input)="onInput()"
-            placeholder="Describe what you want to change..."
-            [disabled]="isProcessing()"
-            rows="1"
-          ></textarea>
-          
-          <button 
-            class="send-btn" 
-            (click)="submitCommand()"
-            [disabled]="!command.trim() || isProcessing()"
-            [class.ready]="command.trim() && !isProcessing()"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
+        <div class="header-right">
+          <span class="keyboard-hint">
+            <kbd>Enter</kbd> to send
+          </span>
         </div>
+      </div>
 
-        <!-- Status Message -->
-        @if (statusMessage()) {
-          <div class="status-bar" [class]="statusType()" @slideUp>
-            <span class="status-icon">{{ getStatusIcon() }}</span>
-            <span class="status-text">{{ statusMessage() }}</span>
-            <button class="dismiss-btn" (click)="dismissStatus()">×</button>
-          </div>
-        }
-
-        <!-- Quick Actions -->
-        <div class="quick-actions" [class.hidden]="isFocused() || command">
-          <span class="actions-label">Quick suggestions:</span>
-          <div class="action-chips">
-            @for (suggestion of suggestions; track suggestion) {
-              <button class="chip" (click)="useSuggestion(suggestion)">
-                {{ suggestion }}
-              </button>
-            }
-          </div>
+      <!-- Input Area -->
+      <div class="input-area" [class.focused]="isFocused()" [class.processing]="isProcessing()">
+        <div class="input-icon">
+          @if (isProcessing()) {
+            <div class="spinner"></div>
+          } @else {
+            <span class="sparkle">✨</span>
+          }
         </div>
+        
+        <textarea
+          #inputField
+          [(ngModel)]="command"
+          (focus)="onFocus()"
+          (blur)="onBlur()"
+          (keydown)="onKeyDown($event)"
+          (input)="onInput()"
+          placeholder="Describe what you want to change..."
+          [disabled]="isProcessing()"
+          rows="1"
+        ></textarea>
+        
+        <button 
+          class="send-btn" 
+          (click)="submitCommand()"
+          [disabled]="!command.trim() || isProcessing()"
+          [class.ready]="command.trim() && !isProcessing()"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
 
-        <!-- Character Count -->
-        @if (command) {
-          <div class="char-count" [class.warning]="command.length > 400">
-            {{ command.length }} / 500
-          </div>
-        }
+      <!-- Status Message -->
+      @if (statusMessage()) {
+        <div class="status-bar" [class]="statusType()">
+          <span class="status-icon">{{ getStatusIcon() }}</span>
+          <span class="status-text">{{ statusMessage() }}</span>
+          <button class="dismiss-btn" (click)="dismissStatus()">×</button>
+        </div>
+      }
+
+      <!-- Quick Actions -->
+      <div class="quick-actions" [class.hidden]="isFocused() || command">
+        <span class="actions-label">Try:</span>
+        <div class="action-chips">
+          @for (suggestion of suggestions; track suggestion) {
+            <button class="chip" (click)="useSuggestion(suggestion)">
+              {{ suggestion }}
+            </button>
+          }
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    /* PROTECTED FLOATING COMMAND INTERFACE */
-    .command-container {
-      position: fixed;
-      bottom: 12px;
-      left: 12px;
-      right: 12px;
-      padding: 0;
-      z-index: 999;
-      animation: float-up 0.5s ease forwards;
-      animation-delay: 0.2s;
-      opacity: 0;
-    }
-
-    @keyframes float-up {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .command-glow {
-      display: none;
-    }
-
-    .command-wrapper {
-      position: relative;
-      max-width: 800px;
-      margin: 0 auto;
-      background: rgba(10, 10, 18, 0.9);
+    /* Command Panel - Inside draggable container */
+    .command-panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 10, 18, 0.98);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border-radius: var(--radius-2xl);
       border: 1px solid rgba(99, 102, 241, 0.2);
-      padding: 16px;
+      border-radius: var(--radius-xl);
+      padding: 14px 16px;
       box-shadow: 
-        0 -8px 40px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-        0 0 80px rgba(99, 102, 241, 0.12),
-        0 0 120px rgba(139, 92, 246, 0.08);
-    }
-
-    .command-wrapper::before {
-      content: '🔒 Protected';
-      position: absolute;
-      top: -10px;
-      left: 20px;
-      font-size: 0.65rem;
-      background: var(--bg-tertiary);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 2px 8px;
-      border-radius: var(--radius-sm);
-      color: var(--accent-purple);
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 80px rgba(99, 102, 241, 0.12);
     }
 
     /* Header */
@@ -167,19 +112,18 @@ import { ToastService } from '../../services/toast.service';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      padding: 0 4px;
+      margin-bottom: 10px;
     }
 
     .ai-indicator {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .ai-dot {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       background: var(--success);
       border-radius: 50%;
       transition: var(--transition-base);
@@ -190,103 +134,76 @@ import { ToastService } from '../../services/toast.service';
       animation: pulse-glow 1.5s ease-in-out infinite;
     }
 
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 4px var(--accent-cyan); }
+      50% { box-shadow: 0 0 12px var(--accent-cyan); }
+    }
+
     .ai-text {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       font-weight: 500;
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
     .keyboard-hint {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: var(--text-dim);
     }
 
     .keyboard-hint kbd {
       background: var(--bg-tertiary);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-xs);
-      padding: 2px 6px;
+      border-radius: 3px;
+      padding: 1px 5px;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
-    }
-
-    .separator {
-      margin: 0 6px;
-      color: var(--border-light);
-    }
-
-    .protected-badge {
-      font-size: 0.85rem;
+      font-size: 0.6rem;
     }
 
     /* Input Area */
     .input-area {
       display: flex;
-      align-items: flex-end;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
       background: rgba(18, 18, 31, 0.8);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
-      padding: 14px 18px;
-      transition: var(--transition-base);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .input-area::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--gradient-glow);
-      opacity: 0;
+      padding: 10px 14px;
       transition: var(--transition-base);
     }
 
     .input-area.focused {
       border-color: var(--accent-indigo);
-      box-shadow: 
-        0 0 0 3px rgba(99, 102, 241, 0.1),
-        var(--shadow-glow-purple);
-    }
-
-    .input-area.focused::before {
-      opacity: 1;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
     }
 
     .input-area.processing {
       border-color: var(--accent-cyan);
-      box-shadow: 
-        0 0 0 3px rgba(0, 245, 255, 0.1),
-        var(--shadow-glow-cyan);
     }
 
     .input-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       flex-shrink: 0;
     }
 
     .sparkle {
-      font-size: 1.25rem;
-      animation: float 3s ease-in-out infinite;
+      font-size: 1rem;
     }
 
     .spinner {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border: 2px solid var(--border-light);
       border-top-color: var(--accent-cyan);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     textarea {
@@ -296,12 +213,11 @@ import { ToastService } from '../../services/toast.service';
       outline: none;
       color: var(--text-primary);
       font-family: var(--font-body);
-      font-size: 1rem;
-      line-height: 1.5;
+      font-size: 0.9rem;
+      line-height: 1.4;
       resize: none;
-      min-height: 24px;
-      max-height: 150px;
-      position: relative;
+      min-height: 20px;
+      max-height: 80px;
     }
 
     textarea::placeholder {
@@ -314,11 +230,11 @@ import { ToastService } from '../../services/toast.service';
 
     /* Send Button */
     .send-btn {
-      width: 48px;
-      height: 48px;
+      width: 36px;
+      height: 36px;
       background: var(--bg-tertiary);
       border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-md);
       color: var(--text-muted);
       cursor: pointer;
       display: flex;
@@ -326,12 +242,11 @@ import { ToastService } from '../../services/toast.service';
       justify-content: center;
       flex-shrink: 0;
       transition: var(--transition-base);
-      position: relative;
     }
 
     .send-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       transition: var(--transition-base);
     }
 
@@ -344,14 +259,11 @@ import { ToastService } from '../../services/toast.service';
       background: var(--gradient-primary);
       border-color: transparent;
       color: white;
-      box-shadow: var(--shadow-glow-purple);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
     }
 
     .send-btn.ready:hover {
       transform: scale(1.05);
-      box-shadow: 
-        var(--shadow-glow-purple),
-        0 0 30px rgba(139, 92, 246, 0.3);
     }
 
     .send-btn.ready svg {
@@ -362,12 +274,11 @@ import { ToastService } from '../../services/toast.service';
     .status-bar {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-      padding: 12px 16px;
-      border-radius: var(--radius-lg);
-      font-size: 0.875rem;
-      animation: slide-up 0.3s ease;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
     }
 
     .status-bar.success {
@@ -398,7 +309,7 @@ import { ToastService } from '../../services/toast.service';
       color: inherit;
       opacity: 0.6;
       cursor: pointer;
-      font-size: 1.25rem;
+      font-size: 1rem;
       line-height: 1;
       padding: 0;
       transition: var(--transition-fast);
@@ -412,20 +323,20 @@ import { ToastService } from '../../services/toast.service';
     .quick-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-top: 12px;
-      padding: 0 4px;
+      gap: 8px;
+      margin-top: 10px;
       transition: var(--transition-base);
+      overflow: hidden;
     }
 
     .quick-actions.hidden {
       opacity: 0;
-      transform: translateY(10px);
-      pointer-events: none;
+      height: 0;
+      margin-top: 0;
     }
 
     .actions-label {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: var(--text-dim);
       white-space: nowrap;
     }
@@ -433,15 +344,15 @@ import { ToastService } from '../../services/toast.service';
     .action-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
     .chip {
       background: var(--bg-tertiary);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-full);
-      padding: 6px 14px;
-      font-size: 0.75rem;
+      padding: 4px 10px;
+      font-size: 0.65rem;
       color: var(--text-secondary);
       cursor: pointer;
       transition: var(--transition-fast);
@@ -454,29 +365,9 @@ import { ToastService } from '../../services/toast.service';
       color: var(--accent-purple);
     }
 
-    /* Character Count */
-    .char-count {
-      position: absolute;
-      bottom: -24px;
-      right: 4px;
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-    }
-
-    .char-count.warning {
-      color: var(--warning);
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
-      .command-container {
-        left: 8px;
-        right: 8px;
-        bottom: 8px;
-      }
-
-      .command-wrapper {
+      .command-panel {
         padding: 12px;
       }
 
@@ -485,30 +376,16 @@ import { ToastService } from '../../services/toast.service';
       }
 
       .quick-actions {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-wrap: wrap;
       }
 
       .action-chips {
-        width: 100%;
         overflow-x: auto;
         flex-wrap: nowrap;
-        padding-bottom: 4px;
       }
 
       .chip {
         flex-shrink: 0;
-      }
-    }
-
-    @keyframes slide-up {
-      from { 
-        opacity: 0; 
-        transform: translateY(10px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
       }
     }
   `]
@@ -522,14 +399,13 @@ export class CommandInputComponent {
   statusMessage = signal('');
   statusType = signal<'success' | 'error' | 'info'>('info');
 
-  suggestions = [
-    'Add a welcome card',
-    'Change the color scheme',
-    'Add a statistics widget',
-    'Create a todo list'
-  ];
-
   private toastService = inject(ToastService);
+
+  suggestions = [
+    'Add a card',
+    'Change colors',
+    'Add widget'
+  ];
 
   constructor(private githubService: GitHubService) {}
 
@@ -542,11 +418,10 @@ export class CommandInputComponent {
   }
 
   onInput() {
-    // Auto-resize textarea
     const textarea = this.inputField?.nativeElement;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+      textarea.style.height = Math.min(textarea.scrollHeight, 80) + 'px';
     }
   }
 
@@ -584,7 +459,6 @@ export class CommandInputComponent {
     this.statusMessage.set('Sending command to AI agent...');
     this.statusType.set('info');
 
-    // Reset textarea height
     if (this.inputField?.nativeElement) {
       this.inputField.nativeElement.style.height = 'auto';
     }
@@ -606,7 +480,6 @@ export class CommandInputComponent {
     } finally {
       this.isProcessing.set(false);
       
-      // Auto-dismiss after 8 seconds
       setTimeout(() => {
         this.statusMessage.set('');
       }, 8000);

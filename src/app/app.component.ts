@@ -7,14 +7,15 @@ import { ToastContainerComponent } from './components/toast-container/toast-cont
 import { AnimatedBackgroundComponent } from './components/animated-background/animated-background.component';
 import { SplashScreenComponent } from './components/splash-screen/splash-screen.component';
 import { KeyboardShortcutsComponent } from './components/keyboard-shortcuts/keyboard-shortcuts.component';
+import { DraggableContainerComponent } from './components/draggable-container/draggable-container.component';
 import { ToastService } from './services/toast.service';
 
 /**
  * AppComponent - Main Application Shell
  * 
  * ⚠️ PROTECTED COMPONENT - DO NOT EDIT VIA AI COMMANDS
- * This component provides the main layout structure.
- * Only DashboardContentComponent can be edited via AI commands.
+ * Protected elements float like lillies on a pond - draggable and minimizable.
+ * The editable dashboard content lives beneath them.
  */
 @Component({
   selector: 'app-root',
@@ -27,40 +28,77 @@ import { ToastService } from './services/toast.service';
     ToastContainerComponent,
     AnimatedBackgroundComponent,
     SplashScreenComponent,
-    KeyboardShortcutsComponent
+    KeyboardShortcutsComponent,
+    DraggableContainerComponent
   ],
   template: `
     <!-- Splash Screen -->
     <app-splash-screen (loadingComplete)="onLoadingComplete()"></app-splash-screen>
 
     <div class="app-container" [class.loaded]="isLoaded()">
-      <!-- PROTECTED: Animated Background -->
+      <!-- Background Layer (The Pond) -->
       <app-animated-background></app-animated-background>
 
-      <!-- PROTECTED: Floating Navigation Header -->
-      <app-burger-menu></app-burger-menu>
-
-      <!-- EDITABLE ZONE INDICATOR -->
-      <div class="editable-zone-container">
-        <div class="zone-label">
-          <span class="zone-icon">✏️</span>
-          <span>Editable Zone</span>
+      <!-- Editable Content Layer (Lives in the pond) -->
+      <div class="pond-content">
+        <div class="editable-zone">
+          <div class="zone-label">
+            <span class="zone-icon">✏️</span>
+            <span>Editable Zone - AI Can Modify This</span>
+          </div>
+          <main class="main-content">
+            <app-dashboard-content></app-dashboard-content>
+          </main>
         </div>
-        
-        <!-- EDITABLE: Main Content Area -->
-        <main class="main-content">
-          <app-dashboard-content></app-dashboard-content>
-        </main>
       </div>
 
-      <!-- PROTECTED: Floating Command Interface -->
-      <app-command-input></app-command-input>
+      <!-- Floating Lillies Layer (Protected Elements) -->
+      
+      <!-- Navigation Header - Floating Lilly -->
+      <app-draggable-container
+        id="header"
+        name="Navigation"
+        icon="🧭"
+        width="calc(100vw - 100px)"
+        height="60px"
+        [initialX]="50"
+        [initialY]="12"
+        [minimizedInitialX]="20"
+        [minimizedInitialY]="20"
+      >
+        <app-burger-menu></app-burger-menu>
+      </app-draggable-container>
 
-      <!-- PROTECTED: Toast Notifications -->
+      <!-- Command Input - Floating Lilly -->
+      <app-draggable-container
+        id="command"
+        name="Command Input"
+        icon="💬"
+        width="min(700px, calc(100vw - 40px))"
+        height="auto"
+        [initialX]="getCommandInitialX()"
+        [initialY]="getCommandInitialY()"
+        [minimizedInitialX]="20"
+        [minimizedInitialY]="100"
+      >
+        <app-command-input></app-command-input>
+      </app-draggable-container>
+
+      <!-- Toast Notifications - Still floating but not draggable -->
       <app-toast-container></app-toast-container>
 
-      <!-- PROTECTED: Keyboard Shortcuts Modal -->
+      <!-- Keyboard Shortcuts Modal -->
       <app-keyboard-shortcuts></app-keyboard-shortcuts>
+
+      <!-- Floating Help Button -->
+      <div class="floating-help" (click)="showHelp()">
+        <span class="help-icon">❓</span>
+        <div class="help-tooltip">
+          <strong>Drag & Drop!</strong><br>
+          Protected elements can be<br>
+          dragged around and minimized
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -77,31 +115,38 @@ import { ToastService } from './services/toast.service';
       opacity: 1;
     }
 
-    /* Editable Zone Container */
-    .editable-zone-container {
+    /* Pond Content - The base layer */
+    .pond-content {
       position: relative;
-      flex: 1;
-      margin: 90px 12px 120px;
-      border: 1px dashed rgba(16, 185, 129, 0.3);
+      min-height: 100vh;
+      z-index: 1;
+    }
+
+    /* Editable Zone */
+    .editable-zone {
+      position: relative;
+      margin: 90px 20px 200px;
+      min-height: calc(100vh - 290px);
+      border: 2px dashed rgba(16, 185, 129, 0.25);
       border-radius: var(--radius-2xl);
       background: rgba(16, 185, 129, 0.02);
       transition: var(--transition-base);
     }
 
-    .editable-zone-container:hover {
-      border-color: rgba(16, 185, 129, 0.5);
-      background: rgba(16, 185, 129, 0.03);
+    .editable-zone:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.04);
     }
 
     .zone-label {
       position: absolute;
-      top: -12px;
-      left: 20px;
+      top: -14px;
+      left: 24px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       background: var(--bg-void);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: var(--radius-sm);
       font-size: 0.7rem;
       color: var(--success);
@@ -109,26 +154,108 @@ import { ToastService } from './services/toast.service';
       letter-spacing: 0.5px;
       font-weight: 600;
       border: 1px solid rgba(16, 185, 129, 0.3);
+      z-index: 2;
     }
 
     .zone-icon {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
     }
 
     .main-content {
-      padding: 32px 24px 24px;
-      overflow-y: auto;
-      position: relative;
-      z-index: 1;
+      padding: 40px 24px 24px;
+      overflow-y: visible;
     }
 
+    /* Floating Help Button */
+    .floating-help {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      background: rgba(10, 10, 18, 0.95);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 900;
+      transition: var(--transition-base);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .floating-help:hover {
+      border-color: rgba(99, 102, 241, 0.6);
+      transform: scale(1.1);
+      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.2);
+    }
+
+    .help-icon {
+      font-size: 1.2rem;
+    }
+
+    .help-tooltip {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      right: 0;
+      background: rgba(10, 10, 18, 0.98);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: var(--transition-base);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .help-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 18px;
+      border: 6px solid transparent;
+      border-top-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .floating-help:hover .help-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .help-tooltip strong {
+      color: var(--accent-cyan);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
-      .editable-zone-container {
-        margin: 85px 8px 140px;
+      .editable-zone {
+        margin: 85px 12px 220px;
       }
 
       .main-content {
-        padding: 24px 16px 16px;
+        padding: 32px 16px 16px;
+      }
+
+      .zone-label {
+        font-size: 0.6rem;
+        padding: 4px 10px;
+      }
+
+      .floating-help {
+        width: 40px;
+        height: 40px;
+        bottom: 12px;
+        right: 12px;
       }
     }
   `]
@@ -147,7 +274,23 @@ export class AppComponent implements OnInit {
     
     // Show welcome toast after splash screen
     setTimeout(() => {
-      this.toastService.success('Welcome to Self-Editing Dashboard! Press ? for shortcuts 🚀');
-    }, 500);
+      this.toastService.info('🪷 Drag the floating elements around! Minimize them by clicking the − button.');
+    }, 800);
+  }
+
+  getCommandInitialX(): number {
+    // Center the command input
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const commandWidth = Math.min(700, viewportWidth - 40);
+    return Math.max(20, (viewportWidth - commandWidth) / 2);
+  }
+
+  getCommandInitialY(): number {
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+    return viewportHeight - 180;
+  }
+
+  showHelp() {
+    this.toastService.info('Press ? for keyboard shortcuts. Drag elements by their handle, minimize with −');
   }
 }

@@ -37,15 +37,23 @@ import { ToastService } from './services/toast.service';
       <!-- PROTECTED: Animated Background -->
       <app-animated-background></app-animated-background>
 
-      <!-- PROTECTED: Navigation Header -->
+      <!-- PROTECTED: Floating Navigation Header -->
       <app-burger-menu></app-burger-menu>
 
-      <!-- EDITABLE: Main Content Area -->
-      <main class="main-content">
-        <app-dashboard-content></app-dashboard-content>
-      </main>
+      <!-- EDITABLE ZONE INDICATOR -->
+      <div class="editable-zone-container">
+        <div class="zone-label">
+          <span class="zone-icon">✏️</span>
+          <span>Editable Zone</span>
+        </div>
+        
+        <!-- EDITABLE: Main Content Area -->
+        <main class="main-content">
+          <app-dashboard-content></app-dashboard-content>
+        </main>
+      </div>
 
-      <!-- PROTECTED: Command Interface -->
+      <!-- PROTECTED: Floating Command Interface -->
       <app-command-input></app-command-input>
 
       <!-- PROTECTED: Toast Notifications -->
@@ -69,17 +77,58 @@ import { ToastService } from './services/toast.service';
       opacity: 1;
     }
 
-    .main-content {
+    /* Editable Zone Container */
+    .editable-zone-container {
+      position: relative;
       flex: 1;
-      padding: 88px 24px 180px;
+      margin: 90px 12px 120px;
+      border: 1px dashed rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-2xl);
+      background: rgba(16, 185, 129, 0.02);
+      transition: var(--transition-base);
+    }
+
+    .editable-zone-container:hover {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.03);
+    }
+
+    .zone-label {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-void);
+      padding: 4px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.7rem;
+      color: var(--success);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .zone-icon {
+      font-size: 0.8rem;
+    }
+
+    .main-content {
+      padding: 32px 24px 24px;
       overflow-y: auto;
       position: relative;
       z-index: 1;
     }
 
     @media (max-width: 768px) {
+      .editable-zone-container {
+        margin: 85px 8px 140px;
+      }
+
       .main-content {
-        padding: 80px 16px 200px;
+        padding: 24px 16px 16px;
       }
     }
   `]

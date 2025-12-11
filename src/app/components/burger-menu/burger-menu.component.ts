@@ -177,19 +177,52 @@ import { CommonModule } from '@angular/common';
     </nav>
   `,
   styles: [`
-    /* Header */
+    /* Header - PROTECTED FLOATING ELEMENT */
     .header {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 72px;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 0 20px;
       z-index: 1000;
-      border-bottom: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      background: rgba(10, 10, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 0 60px rgba(99, 102, 241, 0.1);
+      animation: float-in 0.5s ease forwards;
+    }
+
+    .header::before {
+      content: '🔒';
+      position: absolute;
+      top: -8px;
+      right: 16px;
+      font-size: 0.65rem;
+      background: var(--bg-tertiary);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      color: var(--accent-purple);
+    }
+
+    @keyframes float-in {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .header-left, .header-right {
@@ -396,19 +429,41 @@ import { CommonModule } from '@angular/common';
       visibility: visible;
     }
 
-    /* Menu Panel */
+    /* Menu Panel - PROTECTED FLOATING */
     .menu-panel {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 12px;
+      left: 12px;
       width: 340px;
-      height: 100vh;
-      transform: translateX(-100%);
+      height: calc(100vh - 24px);
+      transform: translateX(calc(-100% - 24px));
       transition: transform var(--transition-slow);
       z-index: 1002;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border-light);
+      border-radius: var(--radius-2xl);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      background: rgba(10, 10, 18, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 0 80px rgba(99, 102, 241, 0.15);
+    }
+
+    .menu-panel::before {
+      content: '🔒 Protected Panel';
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      font-size: 0.65rem;
+      background: var(--bg-tertiary);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      color: var(--accent-purple);
+      z-index: 1;
     }
 
     .menu-panel.open {

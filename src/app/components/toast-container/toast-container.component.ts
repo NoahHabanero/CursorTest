@@ -33,9 +33,10 @@ import { ToastService, Toast } from '../../services/toast.service';
     </div>
   `,
   styles: [`
+    /* PROTECTED FLOATING TOAST CONTAINER */
     .toast-container {
       position: fixed;
-      top: 88px;
+      top: 92px;
       right: 24px;
       z-index: 2000;
       display: flex;
@@ -49,13 +50,18 @@ import { ToastService, Toast } from '../../services/toast.service';
       align-items: center;
       gap: 12px;
       padding: 16px 20px;
-      background: var(--bg-secondary);
+      background: rgba(10, 10, 18, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 0 40px rgba(99, 102, 241, 0.1);
       animation: toast-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
       overflow: hidden;
-      border: 1px solid var(--border-light);
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
 
     .toast.success {

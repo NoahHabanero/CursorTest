@@ -1,5 +1,6 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ThemeService } from '../../services/theme.service';
 
 interface Particle {
   x: number;
@@ -15,6 +16,7 @@ interface Particle {
  * AnimatedBackgroundComponent - Canvas-based Particle Animation
  * 
  * Creates a mesmerizing particle network background effect.
+ * Reacts to theme changes.
  */
 @Component({
   selector: 'app-animated-background',
@@ -44,17 +46,17 @@ interface Particle {
       position: absolute;
       inset: 0;
       background: 
-        radial-gradient(ellipse 100% 60% at 10% -10%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse 80% 50% at 90% 110%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(8, 145, 178, 0.03) 0%, transparent 50%);
+        radial-gradient(ellipse 100% 60% at 10% -10%, color-mix(in srgb, var(--accent-indigo) 8%, transparent) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 50% at 90% 110%, color-mix(in srgb, var(--accent-purple) 6%, transparent) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 50%, color-mix(in srgb, var(--accent-cyan) 3%, transparent) 0%, transparent 50%);
     }
 
     .grid-overlay {
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+        linear-gradient(color-mix(in srgb, var(--text-primary) 2%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 2%, transparent) 1px, transparent 1px);
       background-size: 80px 80px;
       opacity: 0.6;
     }
@@ -63,6 +65,7 @@ interface Particle {
 export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
   
+  private themeService = inject(ThemeService);
   private ctx!: CanvasRenderingContext2D;
   private particles: Particle[] = [];
   private animationId!: number;
@@ -71,16 +74,80 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
   private mouseX = -1000;
   private mouseY = -1000;
 
-  private colors = [
-    'rgba(79, 70, 229, 0.4)',    // indigo
-    'rgba(124, 58, 237, 0.4)',   // violet
-    'rgba(8, 145, 178, 0.35)',   // cyan
-    'rgba(219, 39, 119, 0.3)',   // pink
-  ];
+  private colors: string[] = [];
+  private bgColor = 'rgba(248, 249, 252, 0.15)';
+  private lineColor = 'rgba(79, 70, 229, ';
+
+  constructor() {
+    // React to theme changes
+    effect(() => {
+      const theme = this.themeService.currentTheme();
+      this.updateColorsFromTheme(theme);
+    });
+  }
+
+  private updateColorsFromTheme(theme: any) {
+    const colors = theme.colors;
+    
+    // Determine if dark theme based on background color
+    const isDark = this.isColorDark(colors.bgVoid);
+    
+    // Set particle colors with appropriate alpha
+    this.colors = [
+      this.hexToRgba(colors.accentIndigo, 0.5),
+      this.hexToRgba(colors.accentPurple, 0.5),
+      this.hexToRgba(colors.accentCyan, 0.45),
+      this.hexToRgba(colors.accentPink, 0.4),
+    ];
+    
+    // Set background clear color
+    this.bgColor = this.hexToRgba(colors.bgVoid, isDark ? 0.1 : 0.15);
+    
+    // Set line connection color
+    this.lineColor = this.hexToRgba(colors.accentIndigo, 1).replace(', 1)', ', ');
+    
+    // Update existing particles with new colors
+    this.particles.forEach(particle => {
+      particle.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+    });
+  }
+
+  private isColorDark(hex: string): boolean {
+    const rgb = this.hexToRgb(hex);
+    if (!rgb) return true;
+    const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+    return luminance < 0.5;
+  }
+
+  private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    // Handle rgba format
+    if (hex.startsWith('rgba')) {
+      const match = hex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (match) {
+        return { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) };
+      }
+    }
+    
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const rgb = this.hexToRgb(hex);
+    if (!rgb) return `rgba(99, 102, 241, ${alpha})`;
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+  }
 
   ngOnInit() {
     window.addEventListener('resize', this.handleResize);
     window.addEventListener('mousemove', this.handleMouseMove);
+    
+    // Initialize with current theme colors
+    this.updateColorsFromTheme(this.themeService.currentTheme());
   }
 
   ngAfterViewInit() {
@@ -134,14 +201,14 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
         radius: Math.random() * 2 + 1,
-        color: this.colors[Math.floor(Math.random() * this.colors.length)],
+        color: this.colors[Math.floor(Math.random() * this.colors.length)] || 'rgba(99, 102, 241, 0.5)',
         alpha: Math.random() * 0.5 + 0.2
       });
     }
   }
 
   private animate = () => {
-    this.ctx.fillStyle = 'rgba(248, 249, 252, 0.15)';
+    this.ctx.fillStyle = this.bgColor;
     this.ctx.fillRect(0, 0, this.width, this.height);
 
     this.particles.forEach((particle, i) => {
@@ -190,7 +257,7 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
           this.ctx.moveTo(particle.x, particle.y);
           this.ctx.lineTo(other.x, other.y);
           const alpha = (1 - distance / 120) * 0.12;
-          this.ctx.strokeStyle = `rgba(79, 70, 229, ${alpha})`;
+          this.ctx.strokeStyle = this.lineColor + alpha + ')';
           this.ctx.lineWidth = 0.5;
           this.ctx.stroke();
         }
@@ -200,4 +267,3 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
     this.animationId = requestAnimationFrame(this.animate);
   }
 }
-

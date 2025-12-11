@@ -89,7 +89,7 @@ import { CommonModule } from '@angular/common';
       position: absolute;
       inset: 0;
       background: 
-        radial-gradient(ellipse 80% 50% at 50% 50%, rgba(79, 70, 229, 0.08) 0%, transparent 50%);
+        radial-gradient(ellipse 80% 50% at 50% 50%, color-mix(in srgb, var(--accent-indigo) 8%, transparent) 0%, transparent 50%);
     }
 
     .splash-screen.hiding {

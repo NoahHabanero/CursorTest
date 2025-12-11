@@ -154,7 +154,7 @@ import { DraggableService } from '../../services/draggable.service';
     .icon-ripple {
       position: absolute;
       inset: -4px;
-      border: 2px solid rgba(99, 102, 241, 0.3);
+      border: 2px solid var(--border-glow);
       border-radius: 20px;
       animation: ripple 2s ease-out infinite;
       pointer-events: none;
@@ -246,12 +246,12 @@ import { DraggableService } from '../../services/draggable.service';
       justify-content: center;
       z-index: 10;
       border-radius: 0 0 8px 8px;
-      background: rgba(99, 102, 241, 0.1);
+      background: color-mix(in srgb, var(--accent-indigo) 10%, transparent);
       transition: background 0.2s ease;
     }
 
     .drag-handle:hover {
-      background: rgba(99, 102, 241, 0.2);
+      background: color-mix(in srgb, var(--accent-indigo) 20%, transparent);
     }
 
     .drag-handle:active {
@@ -268,7 +268,7 @@ import { DraggableService } from '../../services/draggable.service';
     .handle-dots span {
       width: 4px;
       height: 4px;
-      background: rgba(99, 102, 241, 0.5);
+      background: color-mix(in srgb, var(--accent-indigo) 50%, transparent);
       border-radius: 50%;
     }
 

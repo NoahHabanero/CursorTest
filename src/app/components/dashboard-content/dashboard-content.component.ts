@@ -244,8 +244,8 @@ import { CommonModule } from '@angular/common';
     }
 
     @keyframes pulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-      50% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--success-glow); }
+      50% { transform: scale(1.1); box-shadow: 0 0 0 8px transparent; }
     }
 
     .hero-title {
@@ -327,7 +327,7 @@ import { CommonModule } from '@angular/common';
     .stat-item:hover {
       border-color: var(--accent-indigo);
       transform: translateY(-4px);
-      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15);
+      box-shadow: var(--shadow-glow-purple);
     }
 
     .stat-value {
@@ -362,12 +362,12 @@ import { CommonModule } from '@angular/common';
     }
 
     .stat-trend.up {
-      background: rgba(16, 185, 129, 0.1);
+      background: var(--success-glow);
       color: var(--success);
     }
 
     .stat-trend.neutral {
-      background: rgba(0, 245, 255, 0.1);
+      background: color-mix(in srgb, var(--accent-cyan) 15%, transparent);
       color: var(--accent-cyan);
     }
 
@@ -440,7 +440,7 @@ import { CommonModule } from '@angular/common';
       inset: 0;
       background: radial-gradient(
         600px circle at var(--mouse-x, 0) var(--mouse-y, 0),
-        rgba(99, 102, 241, 0.1),
+        color-mix(in srgb, var(--accent-indigo) 10%, transparent),
         transparent 40%
       );
       opacity: 0;
@@ -455,8 +455,7 @@ import { CommonModule } from '@angular/common';
       border-color: var(--border-glow);
       box-shadow: 
         var(--shadow-lg), 
-        0 0 50px rgba(99, 102, 241, 0.1),
-        inset 0 0 30px rgba(99, 102, 241, 0.02);
+        var(--shadow-glow-purple);
     }
 
     .feature-icon-wrapper {
@@ -522,7 +521,7 @@ import { CommonModule } from '@angular/common';
       display: inline-block;
       font-size: 0.7rem;
       color: var(--accent-purple);
-      background: rgba(139, 92, 246, 0.1);
+      background: color-mix(in srgb, var(--accent-purple) 12%, transparent);
       padding: 4px 10px;
       border-radius: var(--radius-full);
       position: relative;
@@ -555,9 +554,7 @@ import { CommonModule } from '@angular/common';
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 
-        var(--shadow-lg),
-        0 0 60px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--shadow-lg);
     }
 
     .terminal-header {
@@ -586,9 +583,9 @@ import { CommonModule } from '@angular/common';
       transform: scale(1.1);
     }
 
-    .btn-close { background: #ff5f57; }
-    .btn-minimize { background: #ffbd2e; }
-    .btn-maximize { background: #28ca42; }
+    .btn-close { background: var(--error); }
+    .btn-minimize { background: var(--warning); }
+    .btn-maximize { background: var(--success); }
 
     .terminal-title {
       flex: 1;
@@ -863,7 +860,7 @@ import { CommonModule } from '@angular/common';
       transform: translateX(-50%);
       width: 300px;
       height: 300px;
-      background: radial-gradient(circle, rgba(0, 245, 255, 0.08) 0%, transparent 70%);
+      background: radial-gradient(circle, color-mix(in srgb, var(--accent-cyan) 8%, transparent) 0%, transparent 70%);
       pointer-events: none;
     }
 
@@ -871,8 +868,8 @@ import { CommonModule } from '@angular/common';
       display: inline-block;
       font-size: 0.75rem;
       color: var(--accent-cyan);
-      background: rgba(0, 245, 255, 0.1);
-      border: 1px solid rgba(0, 245, 255, 0.2);
+      background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent-cyan) 25%, transparent);
       padding: 6px 14px;
       border-radius: var(--radius-full);
       margin-bottom: 16px;
@@ -940,7 +937,7 @@ import { CommonModule } from '@angular/common';
       margin-left: auto;
       font-size: 0.7rem;
       color: var(--success);
-      background: rgba(16, 185, 129, 0.1);
+      background: var(--success-glow);
       padding: 2px 8px;
       border-radius: var(--radius-sm);
     }

@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BurgerMenuComponent } from './components/burger-menu/burger-menu.component';
 import { CommandInputComponent } from './components/command-input/command-input.component';
 import { DashboardContentComponent } from './components/dashboard-content/dashboard-content.component';
+import { ToastContainerComponent } from './components/toast-container/toast-container.component';
+import { AnimatedBackgroundComponent } from './components/animated-background/animated-background.component';
+import { ToastService } from './services/toast.service';
 
 /**
  * AppComponent - Main Application Shell
@@ -18,10 +21,15 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
     CommonModule,
     BurgerMenuComponent,
     CommandInputComponent,
-    DashboardContentComponent
+    DashboardContentComponent,
+    ToastContainerComponent,
+    AnimatedBackgroundComponent
   ],
   template: `
     <div class="app-container">
+      <!-- PROTECTED: Animated Background -->
+      <app-animated-background></app-animated-background>
+
       <!-- PROTECTED: Navigation Header -->
       <app-burger-menu></app-burger-menu>
 
@@ -32,6 +40,9 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
 
       <!-- PROTECTED: Command Interface -->
       <app-command-input></app-command-input>
+
+      <!-- PROTECTED: Toast Notifications -->
+      <app-toast-container></app-toast-container>
     </div>
   `,
   styles: [`
@@ -46,6 +57,8 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
       flex: 1;
       padding: 88px 24px 180px;
       overflow-y: auto;
+      position: relative;
+      z-index: 1;
     }
 
     @media (max-width: 768px) {
@@ -55,6 +68,14 @@ import { DashboardContentComponent } from './components/dashboard-content/dashbo
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Self-Editing Dashboard';
+  private toastService = inject(ToastService);
+
+  ngOnInit() {
+    // Show welcome toast after a brief delay
+    setTimeout(() => {
+      this.toastService.success('Welcome to Self-Editing Dashboard! 🚀');
+    }, 1500);
+  }
 }

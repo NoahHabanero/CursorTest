@@ -1,7 +1,8 @@
-import { Component, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GitHubService } from '../../services/github.service';
+import { ToastService } from '../../services/toast.service';
 
 /**
  * CommandInputComponent - Protected Command Input
@@ -494,6 +495,8 @@ export class CommandInputComponent {
     'Create a todo list'
   ];
 
+  private toastService = inject(ToastService);
+
   constructor(private githubService: GitHubService) {}
 
   onFocus() {
@@ -558,12 +561,14 @@ export class CommandInputComponent {
       if (result.success) {
         this.statusMessage.set('Command sent! AI agent is processing. Changes will deploy automatically.');
         this.statusType.set('success');
+        this.toastService.success('Command sent! AI agent is processing your request.');
       } else {
         throw new Error(result.error || 'Failed to send command');
       }
     } catch (error: any) {
       this.statusMessage.set(`Error: ${error.message || 'Failed to send command'}`);
       this.statusType.set('error');
+      this.toastService.error(`Failed to send command: ${error.message || 'Unknown error'}`);
     } finally {
       this.isProcessing.set(false);
       

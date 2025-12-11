@@ -33,7 +33,7 @@ import { ToastService, Toast } from '../../services/toast.service';
     </div>
   `,
   styles: [`
-    /* PROTECTED FLOATING TOAST CONTAINER */
+    /* PROTECTED FLOATING TOAST CONTAINER (Light Theme) */
     .toast-container {
       position: fixed;
       top: 92px;
@@ -50,18 +50,17 @@ import { ToastService, Toast } from '../../services/toast.service';
       align-items: center;
       gap: 12px;
       padding: 16px 20px;
-      background: rgba(10, 10, 18, 0.95);
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-radius: var(--radius-lg);
       box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-        0 0 40px rgba(99, 102, 241, 0.1);
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        0 0 40px rgba(79, 70, 229, 0.08);
       animation: toast-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(79, 70, 229, 0.15);
     }
 
     .toast.success {

@@ -8,6 +8,7 @@ import { AnimatedBackgroundComponent } from './components/animated-background/an
 import { SplashScreenComponent } from './components/splash-screen/splash-screen.component';
 import { KeyboardShortcutsComponent } from './components/keyboard-shortcuts/keyboard-shortcuts.component';
 import { DraggableContainerComponent } from './components/draggable-container/draggable-container.component';
+import { DeploymentTrackerComponent } from './components/deployment-tracker/deployment-tracker.component';
 import { ToastService } from './services/toast.service';
 
 /**
@@ -29,7 +30,8 @@ import { ToastService } from './services/toast.service';
     AnimatedBackgroundComponent,
     SplashScreenComponent,
     KeyboardShortcutsComponent,
-    DraggableContainerComponent
+    DraggableContainerComponent,
+    DeploymentTrackerComponent
   ],
   template: `
     <!-- Splash Screen -->
@@ -84,7 +86,22 @@ import { ToastService } from './services/toast.service';
         <app-command-input></app-command-input>
       </app-draggable-container>
 
-      <!-- Toast Notifications - Still floating but not draggable -->
+      <!-- Deployment Tracker - Floating Lilly -->
+      <app-draggable-container
+        id="tracker"
+        name="Activity Tracker"
+        icon="📡"
+        width="320px"
+        height="400px"
+        [initialX]="getTrackerInitialX()"
+        [initialY]="90"
+        [minimizedInitialX]="20"
+        [minimizedInitialY]="180"
+      >
+        <app-deployment-tracker></app-deployment-tracker>
+      </app-draggable-container>
+
+      <!-- Toast Notifications -->
       <app-toast-container></app-toast-container>
 
       <!-- Keyboard Shortcuts Modal -->
@@ -127,15 +144,15 @@ import { ToastService } from './services/toast.service';
       position: relative;
       margin: 90px 20px 200px;
       min-height: calc(100vh - 290px);
-      border: 2px dashed rgba(16, 185, 129, 0.25);
+      border: 2px dashed rgba(5, 150, 105, 0.25);
       border-radius: var(--radius-2xl);
-      background: rgba(16, 185, 129, 0.02);
+      background: rgba(5, 150, 105, 0.02);
       transition: var(--transition-base);
     }
 
     .editable-zone:hover {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: rgba(16, 185, 129, 0.04);
+      border-color: rgba(5, 150, 105, 0.4);
+      background: rgba(5, 150, 105, 0.04);
     }
 
     .zone-label {
@@ -153,7 +170,7 @@ import { ToastService } from './services/toast.service';
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 600;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(5, 150, 105, 0.25);
       z-index: 2;
     }
 
@@ -173,8 +190,8 @@ import { ToastService } from './services/toast.service';
       right: 20px;
       width: 48px;
       height: 48px;
-      background: rgba(10, 10, 18, 0.95);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(79, 70, 229, 0.2);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -182,13 +199,13 @@ import { ToastService } from './services/toast.service';
       cursor: pointer;
       z-index: 900;
       transition: var(--transition-base);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
 
     .floating-help:hover {
-      border-color: rgba(99, 102, 241, 0.6);
+      border-color: rgba(79, 70, 229, 0.4);
       transform: scale(1.1);
-      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 8px 30px rgba(79, 70, 229, 0.15);
     }
 
     .help-icon {
@@ -199,8 +216,8 @@ import { ToastService } from './services/toast.service';
       position: absolute;
       bottom: calc(100% + 12px);
       right: 0;
-      background: rgba(10, 10, 18, 0.98);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(79, 70, 229, 0.2);
       border-radius: var(--radius-lg);
       padding: 12px 16px;
       font-size: 0.75rem;
@@ -210,7 +227,7 @@ import { ToastService } from './services/toast.service';
       visibility: hidden;
       transform: translateY(10px);
       transition: var(--transition-base);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       text-align: left;
       line-height: 1.5;
     }
@@ -221,7 +238,7 @@ import { ToastService } from './services/toast.service';
       top: 100%;
       right: 18px;
       border: 6px solid transparent;
-      border-top-color: rgba(99, 102, 241, 0.3);
+      border-top-color: rgba(79, 70, 229, 0.2);
     }
 
     .floating-help:hover .help-tooltip {
@@ -231,7 +248,7 @@ import { ToastService } from './services/toast.service';
     }
 
     .help-tooltip strong {
-      color: var(--accent-cyan);
+      color: var(--accent-indigo);
       display: block;
       margin-bottom: 4px;
     }
@@ -279,7 +296,6 @@ export class AppComponent implements OnInit {
   }
 
   getCommandInitialX(): number {
-    // Center the command input
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
     const commandWidth = Math.min(700, viewportWidth - 40);
     return Math.max(20, (viewportWidth - commandWidth) / 2);
@@ -288,6 +304,11 @@ export class AppComponent implements OnInit {
   getCommandInitialY(): number {
     const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
     return viewportHeight - 180;
+  }
+
+  getTrackerInitialX(): number {
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    return viewportWidth - 340; // 320px width + 20px margin
   }
 
   showHelp() {

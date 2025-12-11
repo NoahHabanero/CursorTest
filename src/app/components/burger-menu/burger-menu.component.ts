@@ -178,7 +178,7 @@ import { CommonModule } from '@angular/common';
     </nav>
   `,
   styles: [`
-    /* Header - Now inside draggable container */
+    /* Header - Now inside draggable container (Light Theme) */
     .header {
       width: 100%;
       height: 100%;
@@ -186,14 +186,14 @@ import { CommonModule } from '@angular/common';
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      background: rgba(10, 10, 18, 0.95);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(79, 70, 229, 0.15);
       border-radius: var(--radius-xl);
       box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 0 60px rgba(99, 102, 241, 0.1);
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 0 60px rgba(79, 70, 229, 0.08);
     }
 
     .header-left, .header-right {
@@ -400,7 +400,7 @@ import { CommonModule } from '@angular/common';
       visibility: visible;
     }
 
-    /* Menu Panel */
+    /* Menu Panel (Light Theme) */
     .menu-panel {
       position: fixed;
       top: 12px;
@@ -413,13 +413,13 @@ import { CommonModule } from '@angular/common';
       display: flex;
       flex-direction: column;
       border-radius: var(--radius-2xl);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      background: rgba(10, 10, 18, 0.98);
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.5),
-        0 0 80px rgba(99, 102, 241, 0.15);
+        0 8px 40px rgba(0, 0, 0, 0.12),
+        0 0 80px rgba(79, 70, 229, 0.1);
     }
 
     .menu-panel.open {

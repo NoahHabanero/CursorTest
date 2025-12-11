@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GitHubService } from '../../services/github.service';
 import { ToastService } from '../../services/toast.service';
+import { DeploymentTrackerService } from '../../services/deployment-tracker.service';
 
 /**
  * CommandInputComponent - Protected Command Input
@@ -90,21 +91,21 @@ import { ToastService } from '../../services/toast.service';
     </div>
   `,
   styles: [`
-    /* Command Panel - Inside draggable container */
+    /* Command Panel - Inside draggable container (Light Theme) */
     .command-panel {
       width: 100%;
       height: 100%;
       display: flex;
       flex-direction: column;
-      background: rgba(10, 10, 18, 0.98);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(79, 70, 229, 0.15);
       border-radius: var(--radius-xl);
       padding: 14px 16px;
       box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.5),
-        0 0 80px rgba(99, 102, 241, 0.12);
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 0 60px rgba(79, 70, 229, 0.08);
     }
 
     /* Header */
@@ -164,7 +165,7 @@ import { ToastService } from '../../services/toast.service';
       display: flex;
       align-items: center;
       gap: 10px;
-      background: rgba(18, 18, 31, 0.8);
+      background: var(--bg-tertiary);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
       padding: 10px 14px;
@@ -400,6 +401,7 @@ export class CommandInputComponent {
   statusType = signal<'success' | 'error' | 'info'>('info');
 
   private toastService = inject(ToastService);
+  private deploymentTracker = inject(DeploymentTrackerService);
 
   suggestions = [
     'Add a card',
@@ -463,6 +465,9 @@ export class CommandInputComponent {
       this.inputField.nativeElement.style.height = 'auto';
     }
 
+    // Track the command in deployment tracker
+    this.deploymentTracker.trackCommand(userCommand);
+
     try {
       const result = await this.githubService.createIssue(userCommand);
       
@@ -477,6 +482,7 @@ export class CommandInputComponent {
       this.statusMessage.set(`Error: ${error.message || 'Failed to send command'}`);
       this.statusType.set('error');
       this.toastService.error(`Failed to send command: ${error.message || 'Unknown error'}`);
+      this.deploymentTracker.addEvent('error', `Failed: ${error.message || 'Unknown error'}`);
     } finally {
       this.isProcessing.set(false);
       

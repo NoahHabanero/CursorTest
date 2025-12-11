@@ -44,9 +44,9 @@ interface Particle {
       position: absolute;
       inset: 0;
       background: 
-        radial-gradient(ellipse 100% 60% at 10% -10%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse 80% 50% at 90% 110%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(0, 245, 255, 0.03) 0%, transparent 50%);
+        radial-gradient(ellipse 100% 60% at 10% -10%, rgba(79, 70, 229, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 50% at 90% 110%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(8, 145, 178, 0.03) 0%, transparent 50%);
     }
 
     .grid-overlay {
@@ -72,10 +72,10 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
   private mouseY = -1000;
 
   private colors = [
-    'rgba(99, 102, 241, 0.6)',   // indigo
-    'rgba(139, 92, 246, 0.6)',   // violet
-    'rgba(0, 245, 255, 0.5)',    // cyan
-    'rgba(236, 72, 153, 0.4)',   // pink
+    'rgba(79, 70, 229, 0.4)',    // indigo
+    'rgba(124, 58, 237, 0.4)',   // violet
+    'rgba(8, 145, 178, 0.35)',   // cyan
+    'rgba(219, 39, 119, 0.3)',   // pink
   ];
 
   ngOnInit() {
@@ -141,7 +141,7 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private animate = () => {
-    this.ctx.fillStyle = 'rgba(3, 3, 8, 0.1)';
+    this.ctx.fillStyle = 'rgba(248, 249, 252, 0.15)';
     this.ctx.fillRect(0, 0, this.width, this.height);
 
     this.particles.forEach((particle, i) => {
@@ -189,8 +189,8 @@ export class AnimatedBackgroundComponent implements OnInit, AfterViewInit, OnDes
           this.ctx.beginPath();
           this.ctx.moveTo(particle.x, particle.y);
           this.ctx.lineTo(other.x, other.y);
-          const alpha = (1 - distance / 120) * 0.15;
-          this.ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+          const alpha = (1 - distance / 120) * 0.12;
+          this.ctx.strokeStyle = `rgba(79, 70, 229, ${alpha})`;
           this.ctx.lineWidth = 0.5;
           this.ctx.stroke();
         }

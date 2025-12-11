@@ -1,5 +1,6 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ThemeService } from '../../services/theme.service';
 
 /**
  * BurgerMenuComponent - Protected Navigation Menu
@@ -46,6 +47,37 @@ import { CommonModule } from '@angular/common';
       </div>
 
       <div class="header-right">
+        <!-- Theme Selector -->
+        <div class="theme-selector" [class.open]="themeMenuOpen()">
+          <button class="theme-btn" (click)="toggleThemeMenu()">
+            <span class="theme-icon">{{ themeService.currentTheme().icon }}</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          
+          <div class="theme-dropdown">
+            <div class="dropdown-header">
+              <span class="dropdown-title">🎨 Choose Theme</span>
+            </div>
+            <div class="theme-list">
+              @for (theme of themeService.themes; track theme.id) {
+                <button 
+                  class="theme-option"
+                  [class.active]="theme.id === themeService.currentThemeId()"
+                  (click)="selectTheme(theme.id)"
+                >
+                  <span class="option-icon">{{ theme.icon }}</span>
+                  <span class="option-name">{{ theme.name }}</span>
+                  @if (theme.id === themeService.currentThemeId()) {
+                    <span class="option-check">✓</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
         <div class="time-display">
           <span class="time">{{ currentTime() }}</span>
         </div>
@@ -345,6 +377,121 @@ import { CommonModule } from '@angular/common';
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    /* Theme Selector */
+    .theme-selector {
+      position: relative;
+    }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+
+    .theme-btn:hover {
+      border-color: var(--accent-indigo);
+      background: var(--bg-card-hover);
+    }
+
+    .theme-icon {
+      font-size: 1rem;
+    }
+
+    .dropdown-arrow {
+      width: 14px;
+      height: 14px;
+      color: var(--text-muted);
+      transition: transform var(--transition-base);
+    }
+
+    .theme-selector.open .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .theme-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 200px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: var(--transition-base);
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .theme-selector.open .theme-dropdown {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .dropdown-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .theme-list {
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: left;
+    }
+
+    .theme-option:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .theme-option.active {
+      background: var(--bg-tertiary);
+    }
+
+    .option-icon {
+      font-size: 1.1rem;
+    }
+
+    .option-name {
+      flex: 1;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .option-check {
+      color: var(--success);
+      font-weight: 600;
     }
 
     /* Time & GitHub */
@@ -664,7 +811,10 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class BurgerMenuComponent implements OnInit, OnDestroy {
+  themeService = inject(ThemeService);
+  
   isOpen = signal(false);
+  themeMenuOpen = signal(false);
   deploymentStatus = signal<'live' | 'deploying'>('live');
   statusText = signal('Live');
   currentTime = signal('');
@@ -739,5 +889,14 @@ export class BurgerMenuComponent implements OnInit, OnDestroy {
   openDocs() {
     window.open('https://github.com/NoahHabanero/CursorTest#readme', '_blank');
     this.closeMenu();
+  }
+
+  toggleThemeMenu() {
+    this.themeMenuOpen.update(v => !v);
+  }
+
+  selectTheme(themeId: string) {
+    this.themeService.setTheme(themeId);
+    this.themeMenuOpen.set(false);
   }
 }

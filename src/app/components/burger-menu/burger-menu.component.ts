@@ -1,6 +1,7 @@
-import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../services/theme.service';
+import { SharedCanvasService } from '../../services/shared-canvas.service';
 
 /**
  * BurgerMenuComponent - Protected Navigation Menu
@@ -81,6 +82,24 @@ import { ThemeService } from '../../services/theme.service';
         <div class="time-display">
           <span class="time">{{ currentTime() }}</span>
         </div>
+        <button 
+          class="cloud-btn" 
+          [class.connected]="sharedCanvas.isConnected()"
+          (click)="openCloudConfig.emit()"
+          [title]="sharedCanvas.isConnected() ? 'Connected to shared canvas' : 'Connect to shared canvas'"
+        >
+          @if (sharedCanvas.isConnected()) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+              <polyline points="8 14 12 18 16 14"></polyline>
+              <line x1="12" y1="10" x2="12" y2="18"></line>
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+            </svg>
+          }
+        </button>
         <button class="github-btn" (click)="openGitHub()">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
@@ -503,7 +522,7 @@ import { ThemeService } from '../../services/theme.service';
       border-radius: var(--radius-md);
     }
 
-    .github-btn {
+    .cloud-btn, .github-btn {
       width: 36px;
       height: 36px;
       display: flex;
@@ -517,13 +536,23 @@ import { ThemeService } from '../../services/theme.service';
       transition: var(--transition-base);
     }
 
-    .github-btn:hover {
+    .cloud-btn:hover, .github-btn:hover {
       border-color: var(--accent-purple);
       color: var(--accent-purple);
       background: color-mix(in srgb, var(--accent-purple) 15%, transparent);
     }
 
-    .github-btn svg {
+    .cloud-btn.connected {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: color-mix(in srgb, var(--accent-cyan) 10%, transparent);
+    }
+
+    .cloud-btn.connected:hover {
+      background: color-mix(in srgb, var(--accent-cyan) 20%, transparent);
+    }
+
+    .cloud-btn svg, .github-btn svg {
       width: 18px;
       height: 18px;
     }
@@ -808,6 +837,9 @@ import { ThemeService } from '../../services/theme.service';
 })
 export class BurgerMenuComponent implements OnInit, OnDestroy {
   themeService = inject(ThemeService);
+  sharedCanvas = inject(SharedCanvasService);
+  
+  openCloudConfig = output<void>();
   
   isOpen = signal(false);
   themeMenuOpen = signal(false);

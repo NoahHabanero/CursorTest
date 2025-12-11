@@ -11,8 +11,10 @@ import { DraggableContainerComponent } from './components/draggable-container/dr
 import { DeploymentTrackerComponent } from './components/deployment-tracker/deployment-tracker.component';
 import { ApiKeyModalComponent } from './components/api-key-modal/api-key-modal.component';
 import { ClearCanvasButtonComponent } from './components/clear-canvas-button/clear-canvas-button.component';
+import { CloudConfigModalComponent } from './components/cloud-config-modal/cloud-config-modal.component';
 import { ToastService } from './services/toast.service';
 import { AIEditorService } from './services/ai-editor.service';
+import { SharedCanvasService } from './services/shared-canvas.service';
 
 /**
  * AppComponent - Main Application Shell
@@ -36,7 +38,8 @@ import { AIEditorService } from './services/ai-editor.service';
     DraggableContainerComponent,
     DeploymentTrackerComponent,
     ApiKeyModalComponent,
-    ClearCanvasButtonComponent
+    ClearCanvasButtonComponent,
+    CloudConfigModalComponent
   ],
   template: `
     <!-- Splash Screen -->
@@ -64,6 +67,11 @@ import { AIEditorService } from './services/ai-editor.service';
         <app-api-key-modal (close)="showApiKeyModal.set(false)"></app-api-key-modal>
       }
 
+      <!-- Cloud Config Modal -->
+      @if (showCloudConfigModal()) {
+        <app-cloud-config-modal (close)="showCloudConfigModal.set(false)"></app-cloud-config-modal>
+      }
+
       <!-- Floating Lillies Layer (Protected Elements) -->
       
       <!-- Navigation Header - Floating Lilly -->
@@ -78,7 +86,7 @@ import { AIEditorService } from './services/ai-editor.service';
         [minimizedInitialX]="20"
         [minimizedInitialY]="20"
       >
-        <app-burger-menu></app-burger-menu>
+        <app-burger-menu (openCloudConfig)="showCloudConfigModal.set(true)"></app-burger-menu>
       </app-draggable-container>
 
       <!-- Command Input - Floating Lilly -->
@@ -306,9 +314,11 @@ export class AppComponent implements OnInit {
   title = 'Self-Editing Dashboard';
   isLoaded = signal(false);
   showApiKeyModal = signal(false);
+  showCloudConfigModal = signal(false);
   
   private toastService = inject(ToastService);
   private aiEditor = inject(AIEditorService);
+  sharedCanvas = inject(SharedCanvasService);
 
   ngOnInit() {
     // Check if API key is configured

@@ -1,6 +1,7 @@
-import { Injectable, signal, effect } from '@angular/core';
+import { Injectable, signal, effect, inject } from '@angular/core';
 import { ToastService } from './toast.service';
 import { DeploymentTrackerService } from './deployment-tracker.service';
+import { SharedCanvasService, SharedCanvasState } from './shared-canvas.service';
 
 export interface AIResponse {
   html: string;
@@ -49,6 +50,8 @@ export class AIEditorService {
   commandHistory = signal<string[]>([]);
   canvasVersion = signal<number>(0);
   
+  private sharedCanvas = inject(SharedCanvasService);
+
   constructor(
     private toastService: ToastService,
     private deploymentTracker: DeploymentTrackerService
@@ -59,10 +62,19 @@ export class AIEditorService {
     if (savedKey) this.apiKey.set(savedKey);
     if (savedProvider) this.apiProvider.set(savedProvider);
 
-    // Load persisted canvas state
+    // Set up cloud state sync callback
+    this.sharedCanvas.onStateUpdate = (state: SharedCanvasState) => {
+      this.currentHTML.set(state.html);
+      this.currentCSS.set(state.css);
+      this.currentJS.set(state.js || '');
+      this.commandHistory.set(state.command_history || []);
+      this.canvasVersion.set(state.version);
+    };
+
+    // Load persisted canvas state (local or cloud)
     this.loadCanvasState();
 
-    // Auto-save when content changes
+    // Auto-save when content changes (local storage backup)
     effect(() => {
       const html = this.currentHTML();
       const css = this.currentCSS();
@@ -73,7 +85,22 @@ export class AIEditorService {
     });
   }
 
-  private loadCanvasState() {
+  private async loadCanvasState() {
+    // First try to load from cloud if connected
+    if (this.sharedCanvas.isConnected()) {
+      const cloudState = await this.sharedCanvas.fetchLatestState();
+      if (cloudState) {
+        this.currentHTML.set(cloudState.html);
+        this.currentCSS.set(cloudState.css);
+        this.currentJS.set(cloudState.js || '');
+        this.commandHistory.set(cloudState.command_history || []);
+        this.canvasVersion.set(cloudState.version);
+        console.log('Canvas state loaded from cloud');
+        return;
+      }
+    }
+
+    // Fall back to local storage
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -84,7 +111,7 @@ export class AIEditorService {
           this.currentJS.set(state.js || '');
           this.commandHistory.set(state.commandHistory || []);
           this.canvasVersion.set(state.commandHistory?.length || 0);
-          console.log('Canvas state loaded from storage');
+          console.log('Canvas state loaded from local storage');
           return;
         }
       }
@@ -163,7 +190,18 @@ export class AIEditorService {
         };
         this.editHistory.update(history => [historyItem, ...history].slice(0, 50));
         
-        this.deploymentTracker.addEvent('deployed', 'Canvas evolved successfully!');
+        // Sync to cloud if connected
+        if (this.sharedCanvas.isConnected()) {
+          await this.sharedCanvas.saveState({
+            html: response.html,
+            css: response.css,
+            js: response.js || ''
+          }, command);
+          this.deploymentTracker.addEvent('deployed', 'Canvas synced to cloud!');
+        } else {
+          this.deploymentTracker.addEvent('deployed', 'Canvas evolved locally');
+        }
+        
         this.toastService.show(response.description || 'Website evolved!', 'success');
         return true;
       }

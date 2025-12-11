@@ -1,10 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BurgerMenuComponent } from './components/burger-menu/burger-menu.component';
 import { CommandInputComponent } from './components/command-input/command-input.component';
 import { DashboardContentComponent } from './components/dashboard-content/dashboard-content.component';
 import { ToastContainerComponent } from './components/toast-container/toast-container.component';
 import { AnimatedBackgroundComponent } from './components/animated-background/animated-background.component';
+import { SplashScreenComponent } from './components/splash-screen/splash-screen.component';
+import { KeyboardShortcutsComponent } from './components/keyboard-shortcuts/keyboard-shortcuts.component';
 import { ToastService } from './services/toast.service';
 
 /**
@@ -23,10 +25,15 @@ import { ToastService } from './services/toast.service';
     CommandInputComponent,
     DashboardContentComponent,
     ToastContainerComponent,
-    AnimatedBackgroundComponent
+    AnimatedBackgroundComponent,
+    SplashScreenComponent,
+    KeyboardShortcutsComponent
   ],
   template: `
-    <div class="app-container">
+    <!-- Splash Screen -->
+    <app-splash-screen (loadingComplete)="onLoadingComplete()"></app-splash-screen>
+
+    <div class="app-container" [class.loaded]="isLoaded()">
       <!-- PROTECTED: Animated Background -->
       <app-animated-background></app-animated-background>
 
@@ -43,6 +50,9 @@ import { ToastService } from './services/toast.service';
 
       <!-- PROTECTED: Toast Notifications -->
       <app-toast-container></app-toast-container>
+
+      <!-- PROTECTED: Keyboard Shortcuts Modal -->
+      <app-keyboard-shortcuts></app-keyboard-shortcuts>
     </div>
   `,
   styles: [`
@@ -51,6 +61,12 @@ import { ToastService } from './services/toast.service';
       flex-direction: column;
       min-height: 100vh;
       position: relative;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .app-container.loaded {
+      opacity: 1;
     }
 
     .main-content {
@@ -70,12 +86,19 @@ import { ToastService } from './services/toast.service';
 })
 export class AppComponent implements OnInit {
   title = 'Self-Editing Dashboard';
+  isLoaded = signal(false);
   private toastService = inject(ToastService);
 
   ngOnInit() {
-    // Show welcome toast after a brief delay
+    // App initialization
+  }
+
+  onLoadingComplete() {
+    this.isLoaded.set(true);
+    
+    // Show welcome toast after splash screen
     setTimeout(() => {
-      this.toastService.success('Welcome to Self-Editing Dashboard! 🚀');
-    }, 1500);
+      this.toastService.success('Welcome to Self-Editing Dashboard! Press ? for shortcuts 🚀');
+    }, 500);
   }
 }

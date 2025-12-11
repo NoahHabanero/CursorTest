@@ -1,0 +1,95 @@
+name: Process AI Command
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'AI command to execute'
+        required: true
+        type: string
+
+jobs:
+  process-command:
+    runs-on: ubuntu-latest
+    # Only run on issues with [AI Command] in the title
+    if: >
+      github.event_name == 'workflow_dispatch' || 
+      contains(github.event.issue.title, '[AI Command]')
+    
+    permissions:
+      contents: write
+      issues: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract command
+        id: extract
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            COMMAND="${{ github.event.inputs.command }}"
+          else
+            # Extract command from issue body
+            COMMAND=$(echo "${{ github.event.issue.body }}" | grep -A1 "Command:" | tail -1 | sed 's/^\*\*//;s/\*\*$//')
+          fi
+          echo "command=$COMMAND" >> $GITHUB_OUTPUT
+          echo "Extracted command: $COMMAND"
+
+      - name: Comment on issue - Processing
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 **AI Agent Processing**\n\nI\'m now processing your request:\n> ${{ steps.extract.outputs.command }}\n\nThis may take a few moments...'
+            });
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Note: In a production setup, you would integrate with an AI API here
+      # For now, this is a placeholder that would be extended
+      - name: Process with AI (Placeholder)
+        id: ai-process
+        run: |
+          echo "🤖 AI Command received: ${{ steps.extract.outputs.command }}"
+          echo "📝 In production, this would call an AI API to generate code changes"
+          echo ""
+          echo "To fully implement this feature, you would need to:"
+          echo "1. Set up an AI API integration (OpenAI, Claude, etc.)"
+          echo "2. Send the command to the AI with context about the codebase"
+          echo "3. Apply the generated changes to dashboard-content.component.ts"
+          echo "4. Commit and push the changes"
+          echo ""
+          echo "status=placeholder" >> $GITHUB_OUTPUT
+
+      - name: Comment on issue - Result
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Processing Complete**\n\nThe AI agent has received your command. In the full implementation, this would:\n\n1. Generate code changes using an AI API\n2. Modify the dashboard content component\n3. Commit and push changes\n4. Trigger a deployment\n\nTo enable full functionality, configure the AI API integration in the workflow.'
+            });
+            
+            github.rest.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              labels: ['ai-command', 'processed']
+            });
+

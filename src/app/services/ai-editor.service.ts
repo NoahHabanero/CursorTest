@@ -1,10 +1,11 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect } from '@angular/core';
 import { ToastService } from './toast.service';
 import { DeploymentTrackerService } from './deployment-tracker.service';
 
 export interface AIResponse {
   html: string;
   css: string;
+  js?: string;
   description: string;
 }
 
@@ -14,10 +15,24 @@ export interface EditHistoryItem {
   timestamp: Date;
   html: string;
   css: string;
+  js?: string;
 }
 
+export interface CanvasState {
+  html: string;
+  css: string;
+  js: string;
+  lastUpdated: string;
+  version: number;
+  commandHistory: string[];
+}
+
+const STORAGE_KEY = 'ai-canvas-state';
+const CANVAS_VERSION = 1;
+
 /**
- * AI Editor Service - Connects to AI API to generate page edits
+ * AI Editor Service - Connects to AI API to generate complex websites
+ * Supports persistence so the canvas evolves over time
  */
 @Injectable({
   providedIn: 'root'
@@ -27,9 +42,12 @@ export class AIEditorService {
   private apiProvider = signal<'openai' | 'anthropic'>('openai');
   
   isProcessing = signal<boolean>(false);
-  currentHTML = signal<string>(this.getDefaultHTML());
-  currentCSS = signal<string>(this.getDefaultCSS());
+  currentHTML = signal<string>('');
+  currentCSS = signal<string>('');
+  currentJS = signal<string>('');
   editHistory = signal<EditHistoryItem[]>([]);
+  commandHistory = signal<string[]>([]);
+  canvasVersion = signal<number>(0);
   
   constructor(
     private toastService: ToastService,
@@ -40,6 +58,60 @@ export class AIEditorService {
     const savedProvider = localStorage.getItem('ai-editor-provider') as 'openai' | 'anthropic';
     if (savedKey) this.apiKey.set(savedKey);
     if (savedProvider) this.apiProvider.set(savedProvider);
+
+    // Load persisted canvas state
+    this.loadCanvasState();
+
+    // Auto-save when content changes
+    effect(() => {
+      const html = this.currentHTML();
+      const css = this.currentCSS();
+      const js = this.currentJS();
+      if (html || css || js) {
+        this.saveCanvasState();
+      }
+    });
+  }
+
+  private loadCanvasState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const state: CanvasState = JSON.parse(saved);
+        if (state.version === CANVAS_VERSION) {
+          this.currentHTML.set(state.html);
+          this.currentCSS.set(state.css);
+          this.currentJS.set(state.js || '');
+          this.commandHistory.set(state.commandHistory || []);
+          this.canvasVersion.set(state.commandHistory?.length || 0);
+          console.log('Canvas state loaded from storage');
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load canvas state:', e);
+    }
+    
+    // Use default if no saved state
+    this.currentHTML.set(this.getDefaultHTML());
+    this.currentCSS.set(this.getDefaultCSS());
+    this.currentJS.set('');
+  }
+
+  private saveCanvasState() {
+    try {
+      const state: CanvasState = {
+        html: this.currentHTML(),
+        css: this.currentCSS(),
+        js: this.currentJS(),
+        lastUpdated: new Date().toISOString(),
+        version: CANVAS_VERSION,
+        commandHistory: this.commandHistory()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error('Failed to save canvas state:', e);
+    }
   }
 
   setApiKey(key: string, provider: 'openai' | 'anthropic' = 'openai') {
@@ -74,25 +146,31 @@ export class AIEditorService {
         // Update current content
         this.currentHTML.set(response.html);
         this.currentCSS.set(response.css);
+        this.currentJS.set(response.js || '');
         
-        // Add to history
+        // Add to command history
+        this.commandHistory.update(history => [...history, command].slice(-100));
+        this.canvasVersion.update(v => v + 1);
+        
+        // Add to edit history
         const historyItem: EditHistoryItem = {
           id: crypto.randomUUID(),
           command,
           timestamp: new Date(),
           html: response.html,
-          css: response.css
+          css: response.css,
+          js: response.js
         };
         this.editHistory.update(history => [historyItem, ...history].slice(0, 50));
         
-        this.deploymentTracker.addEvent('deployed', 'Canvas updated successfully!');
-        this.toastService.show(response.description || 'Changes applied!', 'success');
+        this.deploymentTracker.addEvent('deployed', 'Canvas evolved successfully!');
+        this.toastService.show(response.description || 'Website evolved!', 'success');
         return true;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI processing error:', error);
       this.deploymentTracker.addEvent('error', 'Failed to process AI command');
-      this.toastService.show('Failed to process command', 'error');
+      this.toastService.show(error.message || 'Failed to process command', 'error');
     } finally {
       this.isProcessing.set(false);
     }
@@ -104,30 +182,71 @@ export class AIEditorService {
     const provider = this.apiProvider();
     const currentHTML = this.currentHTML();
     const currentCSS = this.currentCSS();
+    const currentJS = this.currentJS();
+    const history = this.commandHistory().slice(-10);
 
-    const systemPrompt = `You are an AI that generates HTML and CSS for a web dashboard sandbox.
-The user will describe what they want, and you must generate the HTML and inline styles.
+    const systemPrompt = `You are an expert web developer AI that builds and evolves complex, beautiful websites.
+You're working on a LIVING website that evolves with each user command.
 
-CURRENT STATE:
+═══════════════════════════════════════════════════════════════
+CURRENT WEBSITE STATE (Version ${this.canvasVersion()})
+═══════════════════════════════════════════════════════════════
+
 HTML:
 ${currentHTML}
 
 CSS:
 ${currentCSS}
 
-RULES:
-1. Generate valid HTML that will be injected into a sandbox container
-2. Use inline styles or generate CSS that will be scoped to the sandbox
-3. Make it visually appealing with modern design
-4. Use CSS variables for theming: --text-primary, --text-secondary, --accent-cyan, --accent-purple, --accent-pink, --bg-card, --bg-tertiary, --border-light, --success, --warning, --error
-5. Be creative and make impressive visual designs
-6. You can use emojis, gradients, animations, flexbox, grid
-7. Keep it self-contained - no external dependencies
+JavaScript:
+${currentJS || '(none yet)'}
 
-Respond ONLY with a JSON object in this exact format (no markdown, no code blocks):
-{"html": "<your html here>", "css": "<your css here>", "description": "Brief description of changes"}`;
+Recent Evolution History:
+${history.length > 0 ? history.map((c, i) => `${i + 1}. "${c}"`).join('\n') : '(Fresh canvas)'}
 
-    const userMessage = `User command: ${command}`;
+═══════════════════════════════════════════════════════════════
+YOUR MISSION
+═══════════════════════════════════════════════════════════════
+
+BUILD upon the existing website. Don't start from scratch unless asked.
+The website should EVOLVE and become more sophisticated over time.
+
+CAPABILITIES:
+✅ Complex multi-section layouts (headers, heroes, features, footers)
+✅ Interactive elements (buttons, forms, accordions, tabs, modals)
+✅ Animations and transitions (CSS animations, hover effects)
+✅ Data displays (cards, tables, charts with CSS, dashboards)
+✅ Navigation systems (navbars, sidebars, breadcrumbs)
+✅ Media elements (image placeholders, video embeds via placeholder)
+✅ Modern UI patterns (glassmorphism, gradients, shadows)
+✅ Responsive design principles
+✅ JavaScript for interactivity (event handlers, state changes)
+
+DESIGN RULES:
+1. Use CSS variables for theming: --text-primary, --text-secondary, --text-muted
+   --accent-cyan, --accent-purple, --accent-pink, --accent-indigo
+   --bg-primary, --bg-secondary, --bg-tertiary, --bg-card
+   --border-light, --border-subtle, --success, --warning, --error
+2. Make it visually STUNNING - use gradients, shadows, animations
+3. Build FUNCTIONAL elements that work (buttons click, forms respond)
+4. Use semantic HTML and modern CSS (flexbox, grid)
+5. Add subtle animations for polish
+6. Use placeholder images: https://picsum.photos/WIDTH/HEIGHT
+
+JAVASCRIPT RULES:
+- Write vanilla JavaScript (no frameworks)
+- Use event delegation when possible
+- Keep state in data attributes or simple variables
+- Make interactive elements actually work!
+
+═══════════════════════════════════════════════════════════════
+
+Respond ONLY with a valid JSON object (no markdown, no code blocks):
+{"html": "...", "css": "...", "js": "...", "description": "Brief description"}
+
+The description should be short (under 50 chars) and describe what evolved.`;
+
+    const userMessage = `Command: ${command}`;
 
     if (provider === 'openai') {
       return await this.callOpenAI(systemPrompt, userMessage);
@@ -149,8 +268,8 @@ Respond ONLY with a JSON object in this exact format (no markdown, no code block
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.7,
-        max_tokens: 4000
+        temperature: 0.8,
+        max_tokens: 16000
       })
     });
 
@@ -162,21 +281,7 @@ Respond ONLY with a JSON object in this exact format (no markdown, no code block
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
     
-    if (content) {
-      try {
-        // Try to parse as JSON, handling potential markdown code blocks
-        let jsonStr = content.trim();
-        if (jsonStr.startsWith('```')) {
-          jsonStr = jsonStr.replace(/```json?\n?/g, '').replace(/```$/g, '').trim();
-        }
-        return JSON.parse(jsonStr);
-      } catch (e) {
-        console.error('Failed to parse AI response:', content);
-        throw new Error('Invalid AI response format');
-      }
-    }
-
-    return null;
+    return this.parseAIResponse(content);
   }
 
   private async callAnthropic(systemPrompt: string, userMessage: string): Promise<AIResponse | null> {
@@ -190,7 +295,7 @@ Respond ONLY with a JSON object in this exact format (no markdown, no code block
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 16000,
         system: systemPrompt,
         messages: [
           { role: 'user', content: userMessage }
@@ -206,108 +311,328 @@ Respond ONLY with a JSON object in this exact format (no markdown, no code block
     const data = await response.json();
     const content = data.content[0]?.text;
     
-    if (content) {
-      try {
-        let jsonStr = content.trim();
-        if (jsonStr.startsWith('```')) {
-          jsonStr = jsonStr.replace(/```json?\n?/g, '').replace(/```$/g, '').trim();
-        }
-        return JSON.parse(jsonStr);
-      } catch (e) {
-        console.error('Failed to parse AI response:', content);
-        throw new Error('Invalid AI response format');
-      }
-    }
+    return this.parseAIResponse(content);
+  }
 
-    return null;
+  private parseAIResponse(content: string | undefined): AIResponse | null {
+    if (!content) return null;
+    
+    try {
+      let jsonStr = content.trim();
+      
+      // Handle markdown code blocks
+      if (jsonStr.startsWith('```')) {
+        jsonStr = jsonStr.replace(/```json?\n?/g, '').replace(/```\s*$/g, '').trim();
+      }
+      
+      // Try to find JSON object in the response
+      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[0];
+      }
+      
+      const parsed = JSON.parse(jsonStr);
+      
+      // Validate required fields
+      if (!parsed.html || !parsed.css) {
+        throw new Error('Missing required fields');
+      }
+      
+      return {
+        html: parsed.html,
+        css: parsed.css,
+        js: parsed.js || '',
+        description: parsed.description || 'Website updated'
+      };
+    } catch (e) {
+      console.error('Failed to parse AI response:', content);
+      throw new Error('AI returned invalid format. Try again.');
+    }
   }
 
   clearCanvas() {
     this.currentHTML.set(this.getDefaultHTML());
     this.currentCSS.set(this.getDefaultCSS());
+    this.currentJS.set('');
+    this.saveCanvasState();
     this.toastService.show('Canvas cleared!', 'info');
   }
 
   resetToDefault() {
-    this.clearCanvas();
+    this.currentHTML.set(this.getDefaultHTML());
+    this.currentCSS.set(this.getDefaultCSS());
+    this.currentJS.set('');
     this.editHistory.set([]);
+    this.commandHistory.set([]);
+    this.canvasVersion.set(0);
+    localStorage.removeItem(STORAGE_KEY);
     this.toastService.show('Reset to default!', 'info');
   }
 
+  getCanvasStats() {
+    return {
+      version: this.canvasVersion(),
+      totalCommands: this.commandHistory().length,
+      lastCommands: this.commandHistory().slice(-5)
+    };
+  }
+
   private getDefaultHTML(): string {
-    return `<div class="welcome-container">
-  <div class="welcome-icon">🎨</div>
-  <h1 class="welcome-title">AI-Powered Canvas</h1>
-  <p class="welcome-subtitle">Type a command to transform this space</p>
-  <div class="welcome-examples">
-    <div class="example-chip">Try: "Create a weather widget"</div>
-    <div class="example-chip">Try: "Add a colorful gradient background"</div>
-    <div class="example-chip">Try: "Build a todo list"</div>
-  </div>
+    return `<div class="landing-page">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">✨ AI-Powered Evolution</span>
+      <h1 class="hero-title">The Living Website</h1>
+      <p class="hero-subtitle">
+        This website evolves with every command. Each visitor shapes its destiny.
+        Type a command below and watch it transform.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value">v0</span>
+          <span class="stat-label">Version</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">0</span>
+          <span class="stat-label">Evolutions</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">∞</span>
+          <span class="stat-label">Possibilities</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Examples Section -->
+  <section class="examples">
+    <h2>Try These Commands</h2>
+    <div class="example-grid">
+      <div class="example-card">
+        <span class="example-icon">🎨</span>
+        <p>"Add a colorful pricing section"</p>
+      </div>
+      <div class="example-card">
+        <span class="example-icon">📊</span>
+        <p>"Create a dashboard with stats"</p>
+      </div>
+      <div class="example-card">
+        <span class="example-icon">🛒</span>
+        <p>"Build a product showcase"</p>
+      </div>
+      <div class="example-card">
+        <span class="example-icon">📝</span>
+        <p>"Add a contact form"</p>
+      </div>
+    </div>
+  </section>
 </div>`;
   }
 
   private getDefaultCSS(): string {
-    return `.welcome-container {
-  display: flex;
-  flex-direction: column;
+    return `.landing-page {
+  min-height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Hero Section */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  padding: 4rem 2rem;
+  min-height: 60vh;
   align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  text-align: center;
-  padding: 2rem;
 }
 
-.welcome-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  animation: float 3s ease-in-out infinite;
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+.hero-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+  color: white;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.welcome-title {
-  font-size: 2.5rem;
-  font-weight: 700;
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.welcome-subtitle {
-  font-size: 1.1rem;
+.hero-subtitle {
+  font-size: 1.2rem;
   color: var(--text-secondary);
+  line-height: 1.6;
   margin: 0 0 2rem 0;
+  max-width: 500px;
 }
 
-.welcome-examples {
+.hero-stats {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
+  gap: 2rem;
 }
 
-.example-chip {
-  padding: 0.5rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-light);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-}
-
-.example-chip:hover {
-  border-color: var(--accent-purple);
-  color: var(--text-primary);
-  transform: translateY(-2px);
-}`;
+@media (max-width: 768px) {
+  .hero-stats {
+    justify-content: center;
   }
 }
 
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Hero Visual */
+.hero-visual {
+  position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floating-shapes {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  opacity: 0.6;
+  animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  top: 20%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+  top: 40%;
+  right: 20%;
+  animation-delay: -2s;
+}
+
+.shape-3 {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+  bottom: 20%;
+  left: 40%;
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg);
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+  50% { 
+    transform: translateY(-20px) rotate(10deg);
+    border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+  }
+}
+
+/* Examples Section */
+.examples {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.examples h2 {
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  margin: 0 0 2rem 0;
+}
+
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.example-card {
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.example-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-purple);
+  box-shadow: 0 12px 40px -12px rgba(124, 58, 237, 0.25);
+}
+
+.example-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.example-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}`;
+  }
+}

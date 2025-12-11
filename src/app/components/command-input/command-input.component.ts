@@ -449,9 +449,9 @@ export class CommandInputComponent {
   aiEditor = inject(AIEditorService);
 
   suggestions = [
-    'Create a weather widget',
-    'Add a colorful gradient',
-    'Build a todo list'
+    'Add a hero section with animations',
+    'Create a pricing table',
+    'Build an interactive dashboard'
   ];
 
   getStatusText(): string {

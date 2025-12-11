@@ -128,22 +128,18 @@ import { DraggableService } from '../../services/draggable.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.95);
+      background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(79, 70, 229, 0.2);
+      border: 1px solid var(--border-glow);
       border-radius: 16px;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        0 0 40px rgba(79, 70, 229, 0.1);
+      box-shadow: var(--shadow-glow);
       transition: all 0.2s ease;
     }
 
     .minimized-icon:hover .icon-content {
-      border-color: rgba(79, 70, 229, 0.4);
-      box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.15),
-        0 0 60px rgba(79, 70, 229, 0.15);
+      border-color: var(--accent-indigo);
+      box-shadow: var(--shadow-lg);
       transform: translateY(-2px);
     }
 
@@ -171,8 +167,8 @@ import { DraggableService } from '../../services/draggable.service';
       left: 50%;
       bottom: calc(100% + 12px);
       transform: translateX(-50%) translateY(10px);
-      background: rgba(255, 255, 255, 0.98);
-      border: 1px solid rgba(79, 70, 229, 0.2);
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glow);
       border-radius: 12px;
       padding: 10px 14px;
       white-space: nowrap;
@@ -180,7 +176,7 @@ import { DraggableService } from '../../services/draggable.service';
       visibility: hidden;
       transition: all 0.2s ease;
       pointer-events: none;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--shadow-lg);
       z-index: 1002;
     }
 
@@ -191,7 +187,7 @@ import { DraggableService } from '../../services/draggable.service';
       left: 50%;
       transform: translateX(-50%);
       border: 6px solid transparent;
-      border-top-color: rgba(79, 70, 229, 0.2);
+      border-top-color: var(--border-glow);
     }
 
     .minimized-icon:hover .icon-tooltip {
@@ -288,13 +284,13 @@ import { DraggableService } from '../../services/draggable.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(79, 70, 229, 0.2);
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glow);
       border-radius: 8px;
       cursor: pointer;
       color: var(--text-muted);
       transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--shadow-sm);
     }
 
     .control-btn svg {
@@ -303,15 +299,15 @@ import { DraggableService } from '../../services/draggable.service';
     }
 
     .control-btn:hover {
-      background: rgba(79, 70, 229, 0.1);
-      border-color: rgba(79, 70, 229, 0.3);
+      background: color-mix(in srgb, var(--accent-indigo) 15%, transparent);
+      border-color: var(--accent-indigo);
       color: var(--text-primary);
     }
 
     .control-btn.minimize:hover {
-      background: rgba(217, 119, 6, 0.1);
-      border-color: rgba(217, 119, 6, 0.3);
-      color: #d97706;
+      background: color-mix(in srgb, var(--warning) 15%, transparent);
+      border-color: var(--warning);
+      color: var(--warning);
     }
 
     /* Protected Badge */
@@ -323,13 +319,13 @@ import { DraggableService } from '../../services/draggable.service';
       align-items: center;
       gap: 6px;
       background: var(--bg-primary);
-      border: 1px solid rgba(79, 70, 229, 0.2);
+      border: 1px solid var(--border-glow);
       padding: 4px 10px;
       border-radius: 8px;
       font-size: 0.65rem;
       color: var(--accent-purple);
       z-index: 10;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      box-shadow: var(--shadow-sm);
     }
 
     .badge-text {

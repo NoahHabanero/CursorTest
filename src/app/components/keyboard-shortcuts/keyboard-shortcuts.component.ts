@@ -66,7 +66,7 @@ interface Shortcut {
       position: fixed;
       inset: 0;
       z-index: 3000;
-      background: rgba(0, 0, 0, 0.8);
+      background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -139,7 +139,7 @@ interface Shortcut {
     }
 
     .close-btn:hover {
-      background: rgba(239, 68, 68, 0.1);
+      background: color-mix(in srgb, var(--error) 15%, transparent);
       border-color: var(--error);
       color: var(--error);
     }

@@ -50,17 +50,15 @@ import { ToastService, Toast } from '../../services/toast.service';
       align-items: center;
       gap: 12px;
       padding: 16px 20px;
-      background: rgba(255, 255, 255, 0.98);
+      background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-radius: var(--radius-lg);
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        0 0 40px rgba(79, 70, 229, 0.08);
+      box-shadow: var(--shadow-glow);
       animation: toast-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(79, 70, 229, 0.15);
+      border: 1px solid var(--border-glow);
     }
 
     .toast.success {

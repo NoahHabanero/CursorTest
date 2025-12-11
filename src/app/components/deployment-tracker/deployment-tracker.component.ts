@@ -109,15 +109,13 @@ import { DeploymentTrackerService, DeploymentEvent } from '../../services/deploy
       height: 100%;
       display: flex;
       flex-direction: column;
-      background: rgba(255, 255, 255, 0.95);
+      background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(79, 70, 229, 0.15);
+      border: 1px solid var(--border-glow);
       border-radius: var(--radius-xl);
       padding: 14px;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 0 60px rgba(79, 70, 229, 0.08);
+      box-shadow: var(--shadow-glow);
       overflow: hidden;
     }
 
@@ -156,27 +154,27 @@ import { DeploymentTrackerService, DeploymentEvent } from '../../services/deploy
     }
 
     .status-indicator.idle {
-      background: rgba(107, 114, 128, 0.1);
+      background: color-mix(in srgb, var(--text-muted) 15%, transparent);
       color: var(--text-muted);
     }
 
     .status-indicator.building {
-      background: rgba(217, 119, 6, 0.1);
+      background: color-mix(in srgb, var(--warning) 15%, transparent);
       color: var(--warning);
     }
 
     .status-indicator.deploying {
-      background: rgba(37, 99, 235, 0.1);
+      background: color-mix(in srgb, var(--info) 15%, transparent);
       color: var(--info);
     }
 
     .status-indicator.deployed {
-      background: rgba(5, 150, 105, 0.1);
+      background: color-mix(in srgb, var(--success) 15%, transparent);
       color: var(--success);
     }
 
     .status-indicator.error {
-      background: rgba(220, 38, 38, 0.1);
+      background: color-mix(in srgb, var(--error) 15%, transparent);
       color: var(--error);
     }
 
@@ -242,23 +240,23 @@ import { DeploymentTrackerService, DeploymentEvent } from '../../services/deploy
     }
 
     .current-activity.building {
-      background: rgba(217, 119, 6, 0.08);
-      border: 1px solid rgba(217, 119, 6, 0.2);
+      background: color-mix(in srgb, var(--warning) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--warning) 25%, transparent);
     }
 
     .current-activity.deploying {
-      background: rgba(37, 99, 235, 0.08);
-      border: 1px solid rgba(37, 99, 235, 0.2);
+      background: color-mix(in srgb, var(--info) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--info) 25%, transparent);
     }
 
     .current-activity.deployed {
-      background: rgba(5, 150, 105, 0.08);
-      border: 1px solid rgba(5, 150, 105, 0.2);
+      background: color-mix(in srgb, var(--success) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
     }
 
     .current-activity.error {
-      background: rgba(220, 38, 38, 0.08);
-      border: 1px solid rgba(220, 38, 38, 0.2);
+      background: color-mix(in srgb, var(--error) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--error) 25%, transparent);
     }
 
     .activity-icon {
@@ -273,7 +271,7 @@ import { DeploymentTrackerService, DeploymentEvent } from '../../services/deploy
     .spinner {
       width: 18px;
       height: 18px;
-      border: 2px solid rgba(217, 119, 6, 0.2);
+      border: 2px solid color-mix(in srgb, var(--warning) 25%, transparent);
       border-top-color: var(--warning);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -353,7 +351,7 @@ import { DeploymentTrackerService, DeploymentEvent } from '../../services/deploy
     }
 
     .clear-btn:hover {
-      background: rgba(220, 38, 38, 0.1);
+      background: color-mix(in srgb, var(--error) 15%, transparent);
       color: var(--error);
     }
 

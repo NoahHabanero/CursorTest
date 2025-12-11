@@ -15,6 +15,7 @@ export interface ThemeColors {
   bgTertiary: string;
   bgCard: string;
   bgCardHover: string;
+  bgGlass: string;
   textPrimary: string;
   textSecondary: string;
   textMuted: string;
@@ -27,9 +28,13 @@ export interface ThemeColors {
   borderSubtle: string;
   borderLight: string;
   borderGlow: string;
+  shadowGlow: string;
+  shadowSm: string;
+  shadowLg: string;
   success: string;
   warning: string;
   error: string;
+  info: string;
 }
 
 /**
@@ -52,6 +57,7 @@ export class ThemeService {
         bgTertiary: '#eef1f6',
         bgCard: 'rgba(255, 255, 255, 0.95)',
         bgCardHover: 'rgba(255, 255, 255, 0.98)',
+        bgGlass: 'rgba(255, 255, 255, 0.95)',
         textPrimary: '#1a1d26',
         textSecondary: '#4a5568',
         textMuted: '#718096',
@@ -63,10 +69,14 @@ export class ThemeService {
         accentIndigo: '#4f46e5',
         borderSubtle: 'rgba(0, 0, 0, 0.06)',
         borderLight: 'rgba(0, 0, 0, 0.1)',
-        borderGlow: 'rgba(79, 70, 229, 0.3)',
+        borderGlow: 'rgba(79, 70, 229, 0.2)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 60px rgba(79, 70, 229, 0.08)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.1)',
         success: '#059669',
         warning: '#d97706',
-        error: '#dc2626'
+        error: '#dc2626',
+        info: '#2563eb'
       }
     },
     {
@@ -81,6 +91,7 @@ export class ThemeService {
         bgTertiary: '#181828',
         bgCard: 'rgba(20, 20, 35, 0.9)',
         bgCardHover: 'rgba(30, 30, 50, 0.95)',
+        bgGlass: 'rgba(15, 15, 25, 0.95)',
         textPrimary: '#ffffff',
         textSecondary: '#b4b4c8',
         textMuted: '#6b6b85',
@@ -92,10 +103,14 @@ export class ThemeService {
         accentIndigo: '#6366f1',
         borderSubtle: 'rgba(255, 255, 255, 0.05)',
         borderLight: 'rgba(255, 255, 255, 0.1)',
-        borderGlow: 'rgba(99, 102, 241, 0.3)',
+        borderGlow: 'rgba(99, 102, 241, 0.4)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 60px rgba(99, 102, 241, 0.15)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.3)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.5)',
         success: '#10b981',
         warning: '#f59e0b',
-        error: '#ef4444'
+        error: '#ef4444',
+        info: '#3b82f6'
       }
     },
     {
@@ -110,6 +125,7 @@ export class ThemeService {
         bgTertiary: '#214263',
         bgCard: 'rgba(19, 42, 69, 0.9)',
         bgCardHover: 'rgba(26, 54, 84, 0.95)',
+        bgGlass: 'rgba(15, 33, 55, 0.95)',
         textPrimary: '#e0f2fe',
         textSecondary: '#7dd3fc',
         textMuted: '#38bdf8',
@@ -121,10 +137,14 @@ export class ThemeService {
         accentIndigo: '#6366f1',
         borderSubtle: 'rgba(56, 189, 248, 0.1)',
         borderLight: 'rgba(56, 189, 248, 0.2)',
-        borderGlow: 'rgba(34, 211, 238, 0.3)',
+        borderGlow: 'rgba(34, 211, 238, 0.4)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(34, 211, 238, 0.15)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.25)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.4)',
         success: '#34d399',
         warning: '#fbbf24',
-        error: '#f87171'
+        error: '#f87171',
+        info: '#22d3ee'
       }
     },
     {
@@ -139,6 +159,7 @@ export class ThemeService {
         bgTertiary: '#5d2a44',
         bgCard: 'rgba(61, 26, 44, 0.9)',
         bgCardHover: 'rgba(77, 34, 56, 0.95)',
+        bgGlass: 'rgba(45, 19, 32, 0.95)',
         textPrimary: '#fdf2f8',
         textSecondary: '#fbcfe8',
         textMuted: '#f9a8d4',
@@ -150,10 +171,14 @@ export class ThemeService {
         accentIndigo: '#ec4899',
         borderSubtle: 'rgba(251, 113, 133, 0.1)',
         borderLight: 'rgba(251, 113, 133, 0.2)',
-        borderGlow: 'rgba(236, 72, 153, 0.3)',
+        borderGlow: 'rgba(236, 72, 153, 0.4)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(236, 72, 153, 0.15)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.25)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.4)',
         success: '#4ade80',
         warning: '#fbbf24',
-        error: '#f87171'
+        error: '#f87171',
+        info: '#f472b6'
       }
     },
     {
@@ -168,6 +193,7 @@ export class ThemeService {
         bgTertiary: '#204030',
         bgCard: 'rgba(20, 42, 32, 0.9)',
         bgCardHover: 'rgba(26, 53, 40, 0.95)',
+        bgGlass: 'rgba(15, 31, 24, 0.95)',
         textPrimary: '#ecfdf5',
         textSecondary: '#a7f3d0',
         textMuted: '#6ee7b7',
@@ -179,10 +205,14 @@ export class ThemeService {
         accentIndigo: '#34d399',
         borderSubtle: 'rgba(110, 231, 183, 0.1)',
         borderLight: 'rgba(110, 231, 183, 0.2)',
-        borderGlow: 'rgba(52, 211, 153, 0.3)',
+        borderGlow: 'rgba(52, 211, 153, 0.4)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(52, 211, 153, 0.15)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.25)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.4)',
         success: '#4ade80',
         warning: '#fbbf24',
-        error: '#f87171'
+        error: '#f87171',
+        info: '#2dd4bf'
       }
     },
     {
@@ -197,6 +227,7 @@ export class ThemeService {
         bgTertiary: '#f3e8ff',
         bgCard: 'rgba(255, 255, 255, 0.95)',
         bgCardHover: 'rgba(255, 255, 255, 0.98)',
+        bgGlass: 'rgba(255, 255, 255, 0.95)',
         textPrimary: '#3b0764',
         textSecondary: '#6b21a8',
         textMuted: '#9333ea',
@@ -209,9 +240,13 @@ export class ThemeService {
         borderSubtle: 'rgba(147, 51, 234, 0.1)',
         borderLight: 'rgba(147, 51, 234, 0.15)',
         borderGlow: 'rgba(147, 51, 234, 0.3)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 60px rgba(147, 51, 234, 0.1)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.1)',
         success: '#059669',
         warning: '#d97706',
-        error: '#dc2626'
+        error: '#dc2626',
+        info: '#8b5cf6'
       }
     },
     {
@@ -226,6 +261,7 @@ export class ThemeService {
         bgTertiary: '#ffe4e6',
         bgCard: 'rgba(255, 255, 255, 0.95)',
         bgCardHover: 'rgba(255, 255, 255, 0.98)',
+        bgGlass: 'rgba(255, 255, 255, 0.95)',
         textPrimary: '#4c0519',
         textSecondary: '#881337',
         textMuted: '#be123c',
@@ -238,9 +274,13 @@ export class ThemeService {
         borderSubtle: 'rgba(225, 29, 72, 0.1)',
         borderLight: 'rgba(225, 29, 72, 0.15)',
         borderGlow: 'rgba(219, 39, 119, 0.3)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 60px rgba(219, 39, 119, 0.1)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.1)',
         success: '#059669',
         warning: '#d97706',
-        error: '#dc2626'
+        error: '#dc2626',
+        info: '#f43f5e'
       }
     },
     {
@@ -255,6 +295,7 @@ export class ThemeService {
         bgTertiary: '#2a2a2a',
         bgCard: 'rgba(26, 26, 26, 0.95)',
         bgCardHover: 'rgba(34, 34, 34, 0.98)',
+        bgGlass: 'rgba(18, 18, 18, 0.95)',
         textPrimary: '#00ff00',
         textSecondary: '#00cc00',
         textMuted: '#009900',
@@ -266,10 +307,14 @@ export class ThemeService {
         accentIndigo: '#00ff00',
         borderSubtle: 'rgba(0, 255, 0, 0.1)',
         borderLight: 'rgba(0, 255, 0, 0.2)',
-        borderGlow: 'rgba(0, 255, 0, 0.4)',
+        borderGlow: 'rgba(0, 255, 0, 0.5)',
+        shadowGlow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 255, 0, 0.2)',
+        shadowSm: '0 2px 8px rgba(0, 0, 0, 0.4)',
+        shadowLg: '0 8px 48px rgba(0, 0, 0, 0.6)',
         success: '#00ff00',
         warning: '#ffff00',
-        error: '#ff0000'
+        error: '#ff0000',
+        info: '#00ffff'
       }
     }
   ];
@@ -314,6 +359,7 @@ export class ThemeService {
     root.style.setProperty('--bg-tertiary', colors.bgTertiary);
     root.style.setProperty('--bg-card', colors.bgCard);
     root.style.setProperty('--bg-card-hover', colors.bgCardHover);
+    root.style.setProperty('--bg-glass', colors.bgGlass);
     root.style.setProperty('--text-primary', colors.textPrimary);
     root.style.setProperty('--text-secondary', colors.textSecondary);
     root.style.setProperty('--text-muted', colors.textMuted);
@@ -326,9 +372,13 @@ export class ThemeService {
     root.style.setProperty('--border-subtle', colors.borderSubtle);
     root.style.setProperty('--border-light', colors.borderLight);
     root.style.setProperty('--border-glow', colors.borderGlow);
+    root.style.setProperty('--shadow-glow', colors.shadowGlow);
+    root.style.setProperty('--shadow-sm', colors.shadowSm);
+    root.style.setProperty('--shadow-lg', colors.shadowLg);
     root.style.setProperty('--success', colors.success);
     root.style.setProperty('--warning', colors.warning);
     root.style.setProperty('--error', colors.error);
+    root.style.setProperty('--info', colors.info);
   }
 }
 

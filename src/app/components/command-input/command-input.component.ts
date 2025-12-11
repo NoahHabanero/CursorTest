@@ -91,21 +91,19 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
     </div>
   `,
   styles: [`
-    /* Command Panel - Inside draggable container (Light Theme) */
+    /* Command Panel - Theme-aware */
     .command-panel {
       width: 100%;
       height: 100%;
       display: flex;
       flex-direction: column;
-      background: rgba(255, 255, 255, 0.95);
+      background: var(--bg-glass);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(79, 70, 229, 0.15);
+      border: 1px solid var(--border-glow);
       border-radius: var(--radius-xl);
       padding: 14px 16px;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 0 60px rgba(79, 70, 229, 0.08);
+      box-shadow: var(--shadow-glow);
     }
 
     /* Header */
@@ -174,7 +172,7 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
 
     .input-area.focused {
       border-color: var(--accent-indigo);
-      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-indigo) 15%, transparent);
     }
 
     .input-area.processing {
@@ -260,7 +258,7 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
       background: var(--gradient-primary);
       border-color: transparent;
       color: white;
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--accent-purple) 40%, transparent);
     }
 
     .send-btn.ready:hover {
@@ -283,20 +281,20 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
     }
 
     .status-bar.success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: color-mix(in srgb, var(--success) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
       color: var(--success);
     }
 
     .status-bar.error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: color-mix(in srgb, var(--error) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--error) 25%, transparent);
       color: var(--error);
     }
 
     .status-bar.info {
-      background: rgba(0, 245, 255, 0.1);
-      border: 1px solid rgba(0, 245, 255, 0.2);
+      background: color-mix(in srgb, var(--accent-cyan) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent-cyan) 25%, transparent);
       color: var(--accent-cyan);
     }
 
@@ -362,7 +360,7 @@ import { DeploymentTrackerService } from '../../services/deployment-tracker.serv
 
     .chip:hover {
       border-color: var(--accent-purple);
-      background: rgba(139, 92, 246, 0.1);
+      background: color-mix(in srgb, var(--accent-purple) 15%, transparent);
       color: var(--accent-purple);
     }
 

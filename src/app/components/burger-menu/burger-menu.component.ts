@@ -210,7 +210,7 @@ import { ThemeService } from '../../services/theme.service';
     </nav>
   `,
   styles: [`
-    /* Header - Now inside draggable container (Light Theme) */
+    /* Header - Theme-aware */
     .header {
       width: 100%;
       height: 100%;
@@ -218,14 +218,12 @@ import { ThemeService } from '../../services/theme.service';
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      background: rgba(255, 255, 255, 0.95);
+      background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(79, 70, 229, 0.15);
+      border: 1px solid var(--border-glow);
       border-radius: var(--radius-xl);
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 0 60px rgba(79, 70, 229, 0.08);
+      box-shadow: var(--shadow-glow);
     }
 
     .header-left, .header-right {
@@ -250,12 +248,12 @@ import { ThemeService } from '../../services/theme.service';
 
     .burger-btn:hover {
       border-color: var(--accent-cyan);
-      background: rgba(0, 245, 255, 0.05);
+      background: color-mix(in srgb, var(--accent-cyan) 10%, transparent);
     }
 
     .burger-btn.active {
       border-color: var(--accent-purple);
-      background: rgba(139, 92, 246, 0.1);
+      background: color-mix(in srgb, var(--accent-purple) 15%, transparent);
     }
 
     .burger-icon {
@@ -346,14 +344,14 @@ import { ThemeService } from '../../services/theme.service';
     }
 
     .live-indicator.live {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: color-mix(in srgb, var(--success) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
       color: var(--success);
     }
 
     .live-indicator.deploying {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--warning) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
       color: var(--warning);
     }
 
@@ -424,7 +422,7 @@ import { ThemeService } from '../../services/theme.service';
       background: var(--bg-primary);
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-lg);
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px);
@@ -522,7 +520,7 @@ import { ThemeService } from '../../services/theme.service';
     .github-btn:hover {
       border-color: var(--accent-purple);
       color: var(--accent-purple);
-      background: rgba(139, 92, 246, 0.1);
+      background: color-mix(in srgb, var(--accent-purple) 15%, transparent);
     }
 
     .github-btn svg {
@@ -534,7 +532,7 @@ import { ThemeService } from '../../services/theme.service';
     .menu-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
       backdrop-filter: blur(8px);
       opacity: 0;
       visibility: hidden;
@@ -547,7 +545,7 @@ import { ThemeService } from '../../services/theme.service';
       visibility: visible;
     }
 
-    /* Menu Panel (Light Theme) */
+    /* Menu Panel - Theme-aware */
     .menu-panel {
       position: fixed;
       top: 12px;
@@ -560,13 +558,11 @@ import { ThemeService } from '../../services/theme.service';
       display: flex;
       flex-direction: column;
       border-radius: var(--radius-2xl);
-      border: 1px solid rgba(79, 70, 229, 0.15);
-      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid var(--border-glow);
+      background: var(--bg-glass);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      box-shadow: 
-        0 8px 40px rgba(0, 0, 0, 0.12),
-        0 0 80px rgba(79, 70, 229, 0.1);
+      box-shadow: var(--shadow-glow);
     }
 
     .menu-panel.open {
@@ -605,7 +601,7 @@ import { ThemeService } from '../../services/theme.service';
     }
 
     .close-btn:hover {
-      background: rgba(239, 68, 68, 0.1);
+      background: color-mix(in srgb, var(--error) 15%, transparent);
       border-color: var(--error);
       color: var(--error);
     }
@@ -652,12 +648,12 @@ import { ThemeService } from '../../services/theme.service';
     }
 
     .status-badge.live {
-      background: rgba(16, 185, 129, 0.15);
+      background: color-mix(in srgb, var(--success) 20%, transparent);
       color: var(--success);
     }
 
     .status-badge.deploying {
-      background: rgba(245, 158, 11, 0.15);
+      background: color-mix(in srgb, var(--warning) 20%, transparent);
       color: var(--warning);
     }
 
@@ -719,7 +715,7 @@ import { ThemeService } from '../../services/theme.service';
     }
 
     .menu-item:hover {
-      background: rgba(99, 102, 241, 0.1);
+      background: color-mix(in srgb, var(--accent-indigo) 15%, transparent);
     }
 
     .item-icon {
@@ -744,7 +740,7 @@ import { ThemeService } from '../../services/theme.service';
     .item-badge {
       font-size: 0.65rem;
       padding: 2px 6px;
-      background: rgba(139, 92, 246, 0.15);
+      background: color-mix(in srgb, var(--accent-purple) 20%, transparent);
       color: var(--accent-purple);
       border-radius: var(--radius-sm);
     }
